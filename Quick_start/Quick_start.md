@@ -184,7 +184,7 @@
             
             ```python
             target_experiments = {}
-            for rm in mlflow.search_experiments(filter_string="name = 'Titanic_deploy'"):
+            for rm in mlflow.search_experiments(filter_string="name = 'Titanic'"):
                 target_experiments = dict(rm)
             
             experiment_id = target_experiments['experiment_id']
@@ -204,7 +204,7 @@
             best_run = runs_df.iloc[0]
             best_run_id = best_run["run_id"]
             mv = mlflow.register_model(model_uri="runs:/%s/Model"%best_run_id, 
-                                       name="DNN_model")
+                                       name="Titanic_model")
             ```
             
         - 將註冊後的模型加入版本號(Staging, Production, Archived)
@@ -212,7 +212,7 @@
             ```python
             client = MlflowClient(tracking_uri=os.getenv('MLFLOW_TRACKING_URI'))
             client.transition_model_version_stage(
-                name="DNN_model", version=int(mv.version), stage="Production"
+                name="Titanic_model", version=int(mv.version), stage="Production"
             )
             ```
             
@@ -226,7 +226,7 @@ import numpy as np
 - 下載註冊後的模型, 並使用MLflow 讀取模型
     
     ```python
-    model_name = "DNN_model"
+    model_name = "Titanic_model"
     stage = "Production"
     
     model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{stage}")
