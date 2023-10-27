@@ -1,0 +1,37 @@
+RFS_NAME: 'minio' # don't modify # Name of the s3 block
+
+# "flow_name/deploy_name" should be unique (check prefect server)
+deployment:
+  flow_py_name: flow.py    # name of your flow.py
+  flow_name: main                  # project name # same as your flow function in flow.py
+  deploy_name: model_training_mnist     # purpose (e.g., daliy_model, data_update, etc.)
+  pool_name: cpu_pool    # resource pool
+  queue_name: ml                   # project name (temporary)
+
+scheduler:
+  # main
+  method: 'rrule'                  # interval, cron, rrule
+  timezone: 'Asia/Taipei'          # 'Asia/Taipei', 'UTC'
+  # settings
+  interval: 3600                     # sec
+  cron: '1 * * * *'
+  rrule: 'FREQ=WEEKLY;BYDAY=MO,WE,FR;UNTIL=20231030T160000Z'
+
+  # How to write cron & rrule? check the link below
+  # https://docs.prefect.io/2.10.21/concepts/schedules/
+
+# Experiment name
+experiment_name: 'MNIST'
+developer_name: 'AIF'
+train_data_path: './data/MNIST/train'
+
+dvc_remote: 's3://dvcmnist/'
+
+# Model training
+hyperparameter:
+  random_seed: 12
+  val_size: 0.2
+  shuffle_data: True
+  batch_size: 64
+  learning_rate: 0.001
+  n_epochs: 10
