@@ -2,7 +2,6 @@ __pycache__/
 __MACOSX/
 .idea/
 .ipynb_checkpoints
-.env
 
 dogs-vs-cats/
 .dvc/

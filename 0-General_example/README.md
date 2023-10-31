@@ -112,7 +112,7 @@ def main():
 * `flow_agent/`：從本機端部署任務到伺服器上所需的檔案。
 * `server/`：在伺服端將服務架設起來所需的檔案。
 * `ml_experimenter/`：以Jupyter容器模擬工程師進行模型開發的環境，可以在Jupyter Lab中進行不同資料集的模型訓練，並使用MLflow來進行實驗追蹤與模型版本控制。
-* `model_serving/`：以Flows裡的程式碼訓練幾個版本的模型後，就能先到MLflow的UI註冊幾個版本的模型，命名為「MNIST」並且挑選適當的版本為「Production」階段。接著就能透過一個以[Flask](https://flask.palletsprojects.com/en/2.3.x/)建立的簡單網頁，將我們訓練好的模型（就是先前設為「Production」的版本）上線，讓使用者上傳自己的貓狗圖片並讓模型進行預測，同時我們也會搜集上傳的圖片，讓模型進行自動標註，後續再交由資料科學家進行人工確認，最後進行下一版的模型訓練，達到持續訓練。
+* `model_serving/`：以Flows裡的程式碼訓練幾個版本的模型後，就能先到MLflow的UI註冊幾個版本的模型，命名為「MNIST」並且挑選適當的版本為「Production」階段。接著就能透過一個以[Flask](https://flask.palletsprojects.com/en/2.3.x/)建立的簡單網頁，將我們訓練好的模型（就是先前設為「Production」的版本）上線，讓使用者上傳自己的手寫數字圖片並讓模型進行預測，同時我們也會搜集上傳的圖片，讓模型進行自動標註，後續再交由資料科學家進行人工確認，最後進行下一版的模型訓練，達到持續訓練。
 
 資料夾中通常包含以下幾種類型的檔案：
 * `docker-compose.yml`
@@ -186,8 +186,8 @@ git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版
 #### 3.1.2 將訓練資料推送至上游以及從上游下載
 之後就能將完整的訓練資料推送至上游（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至上游的儲存空間，需留意空間使用量。
 ````commandline
-dvc remote add remote <S3 bucket path>  # remote是自定義的上游名稱
-dvc remote modify remote endpointurl <S3 endpoint URL>
+dvc remote add remote s3://dvcmnist/  # dvc add 後面接的「remote」是自定義的上游名稱
+dvc remote modify remote endpointurl http://localhost:9000
 export AWS_ACCESS_KEY_ID=admin
 export AWS_SECRET_ACCESS_KEY=adminsecretkey
 dvc push -r remote  # 把這次的更動推送上到名為remote的遠端上
@@ -197,10 +197,10 @@ ls MNIST/train/0 | wc -l  # 可以透過確認數字0的資料數量來確認版
 ````
 未來要下載上游的資料（例如在新的電腦或容器上），先下載`MNIST.dvc`，再執行以下程式碼：
 ````commandline
-export AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID>
-export AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY>
-dvc remote add remote <S3 bucket path>
-dvc remote modify remote endpointurl <S3 endpoint URL>
+export AWS_ACCESS_KEY_ID=admin
+export AWS_SECRET_ACCESS_KEY=adminsecretkey
+dvc remote add remote s3://dvcmnist/
+dvc remote modify remote endpointurl http://localhost:9000
 dvc pull --remote remote
 ````
 
@@ -214,7 +214,7 @@ git tag -a "v2.0" -m "v2.0, more images"
 dvc push -r remote  # 把這次的更動Push上去
 #git push  # 如果有遠端的git repo可以執行
 
-ls MNIST/train/0 | wc -l  # 可以透過確認數字0的資料數量來確認版本，這個版本要比第一個版本多出一些
+ls MNIST/train/0 | wc -l  # 可以透過確認數字0的資料數量來確認版本是否有不同，這個版本要比第一個版本多出一些
 ````
 
 ### 3.2 在模型開發階段中，進行實驗性的訓練
