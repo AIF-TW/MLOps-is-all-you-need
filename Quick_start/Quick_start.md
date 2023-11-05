@@ -9,9 +9,9 @@
 
 - 紀錄模型超參數及訓練結果、並將模型存到 Minio裡面
     ```python
+    # 套件宣告
     import pandas as pd
-    from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
-    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import MinMaxScaler
     from sklearn.svm import SVC
     from xgboost import XGBClassifier
     from dotenv import load_dotenv
@@ -19,66 +19,32 @@
     from mlflow import MlflowClient
     import os
     from datetime import datetime
+    import gdown
     ```
-    1. 從 DVC 獲取資料
-        
-        
+    1. 使用 Gdown 獲取資料
+        ```python
+        # 資料下載 url
+        url = "https://drive.google.com/file/d/13_yil-3-ihA_px4nFdWq8KVoQWxxffHm/view?usp=sharing"
+
+        gdown.download(url, output='data/titanic_data.csv', quiet=False, fuzzy=True)
+        ```
     2. 資料前處理
         
         ```python
         # 將 Age 的缺失值補 Age 的平均數
-        data['Age'].fillna(data['Age'].mean(), inplace = True) # inplace=True 表示覆蓋掉原資料
-        
-        # 將 Embarked 的缺失值補 Embarked 的眾數
-        data['Embarked'].fillna(data['Embarked'].mode()[0], inplace = True)
-        
-        # 將 Fare 的缺失值補 Fare 的中位數
-        data['Fare'].fillna(data['Fare'].median(), inplace = True)
-        
-        # drop 較為不重要的欄位
-        drop_column = ['PassengerId','Cabin', 'Ticket', 'Name']
-        data.drop(drop_column, axis=1, inplace = True)
-        
-        # 資料切分，並紀錄random_state
-        random_state = 311
-        test_size = 0.2
-        data_train, data_val = train_test_split(data,
-                                                test_size=test_size,
-                                                shuffle=True, 
-                                                random_state=random_state)
+        data['Age'].fillna(data['Age'].mean(), inplace = True) 
         # 資料 Ground Truth 設定
-        y_train = data_train.Survived
-        X_train = data_train.drop(columns='Survived')
+        y_train = data.Survived
+        X_train = data.drop(columns='Survived')
         
-        y_val = data_train.Survived
-        X_val = data_train.drop(columns='Survived')
-        
-        # 類別變項與連續變項正規化
-        categorical_features = ['Pclass', 'Sex', 'Embarked']
+        # 選取數值型變項
         numerical_features = ['Age', 'SibSp', 'Parch', 'Fare']
-        X_train.Pclass = X_train.Pclass.astype('object')
-        X_val.Pclass = X_val.Pclass.astype('object')
-        
-        # 將類別變項進行one-hot編碼(OneHotEncoder)並紀錄到新表格
-        encoder = OneHotEncoder(handle_unknown='ignore', sparse=False)
-        
-        X_train_onehot = pd.DataFrame(encoder.fit_transform(X_train[categorical_features]), # 將類別變項進行轉換
-                                      columns=encoder.get_feature_names_out(categorical_features), # 輸入新的欄位名稱
-                                      index=X_train.index) # 紀錄資料順序
-                                      
-        X_val_onehot = pd.DataFrame(encoder.transform(X_val[categorical_features]), # 將類別變項進行轉換
-                                    columns=encoder.get_feature_names_out(categorical_features), # 輸入新的欄位名稱
-                                    index=X_val.index) # 紀錄資料順序
-        
+        X_train = X_train[numerical_features]
+
         # 將連續變項歸一化(MinMaxScaler): 將數值壓縮到0~1之間
         scaler = MinMaxScaler()
-        
         X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
-        X_val[numerical_features] = scaler.transform(X_val[numerical_features])
-        
-        # 合併(concat)處理後的類別變項欄位、連續變項欄位
-        X_train = pd.concat([X_train_onehot, X_train[numerical_features]], axis=1)
-        X_val = pd.concat([X_val_onehot, X_val[numerical_features]], axis=1)
+
         ```
         
     3. 模型設計
@@ -94,8 +60,7 @@
         # 訓練模型
         model_svc.fit(X_train, y_train)
         
-        model_xgb.fit(X_train, y_train,
-                      eval_set=[(X_val, y_val)])
+        model_xgb.fit(X_train, y_trainㄎ)
         ```
         
     4. 評估指標
@@ -137,27 +102,39 @@
             now = datetime.now()
             dt_string = now.strftime("%Y-%m-%d %H-%M-%S")
             with mlflow.start_run(run_name='Run_%s' % dt_string):
+                # 設定開發者名稱
                 mlflow.set_experiment_tag('developer', 'GU')
-            
+                
+                # 設定需要被紀錄的參數
                 mlflow.log_params({
                     'Model': "XGboost",
                     'Learning rate': 0.1,
                 })
+
+                # 設定需要被紀錄的評估指標
                 mlflow.log_metric("Test Accuracy", accuracy_xgb)
+
+                # 上傳訓練好的模型
                 mlflow.xgboost.log_model(model_xgb, artifact_path='Model')
             
             # SVC 實驗紀錄
             now = datetime.now()
             dt_string = now.strftime("%Y-%m-%d %H-%M-%S")
             with mlflow.start_run(run_name='Run_%s' % dt_string):
+                # 設定開發者名稱
                 mlflow.set_experiment_tag('developer', 'GU')
-            
+                
+                # 設定需要被紀錄的參數
                 mlflow.log_params({
                     'Model': 'SVC',
                     'C': 1,
                     'kernel':'rbf'
                 })
+
+                # 設定需要被紀錄的評估指標
                 mlflow.log_metric("Test Accuracy", accuracy_svc)
+
+                # 上傳訓練好的模型
                 mlflow.sklearn.log_model(model_svc, artifact_path='Model')
             ```
             
@@ -216,25 +193,20 @@
             )
             ```
             
-1. 模型部署預測
+    2. 模型部署預測
 
-```python
-import mlflow.pyfunc
-import numpy as np
-```
-
-- 下載註冊後的模型, 並使用MLflow 讀取模型
-    
-    ```python
-    model_name = "Titanic_model"
-    stage = "Production"
-    
-    model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{stage}")
-    ```
-    
-- 建立一筆測試資料，並進行預測
-    
-    ```python
-    result = model.predict(X_val[:1])
-    print(result)
-    ```
+        - 下載註冊後的模型, 並使用MLflow 讀取模型
+            
+            ```python
+            model_name = "Titanic_model"
+            stage = "Production"
+            
+            model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{stage}")
+            ```
+            
+        - 建立一筆測試資料，並進行預測
+            
+            ```python
+            result = model.predict(X_train[:1])
+            print(result)
+            ```
