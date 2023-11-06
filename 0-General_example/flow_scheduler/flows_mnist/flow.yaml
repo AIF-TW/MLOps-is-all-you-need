@@ -1,34 +1,36 @@
-RFS_NAME: 'minio' # don't modify # Name of the s3 block
+# 部署至Prefect伺服器的相關設定
+RFS_NAME: 'minio' # 值需與server/.env裡面的RFS_NAME環境變數相同
 
-# "flow_name/deploy_name" should be unique (check prefect server)
 deployment:
-  flow_py_name: flow.py    # name of your flow.py
-  flow_name: main                  # project name # same as your flow function in flow.py
-  deploy_name: model_training_mnist     # purpose (e.g., daliy_model, data_update, etc.)
-  pool_name: cpu_pool    # resource pool
-  queue_name: ml                   # project name (temporary)
+  flow_py_name: flow.py  # flow.py的檔名
 
+  # 以下的flow_name與deploy_name會顯示在Prefect UI，為了方便管理，建議每個專案都有不同的flow_name與deploy_name名稱
+  flow_name: main  # 建議設定為專案名稱，與flow.py裡面以「@flow」裝飾的主函式名稱相同
+  deploy_name: model_training_mnist  # 目的，如daliy_model、data_update
+
+  pool_name: gpu_pool  # 要調用的運算資源
+  queue_name: ml  # 專案名稱
+
+# 排程相關設定
 scheduler:
-  # main
-  method: 'rrule'                  # interval, cron, rrule
-  timezone: 'Asia/Taipei'          # 'Asia/Taipei', 'UTC'
-  # settings
-  interval: 3600                     # sec
-  cron: '1 * * * *'
-  rrule: 'FREQ=WEEKLY;BYDAY=MO,WE,FR;UNTIL=20231030T160000Z'
+  # 排程方式設定
+  method: 'rrule'  # 排程的時間設定，可選擇'interval'、'cron'或'rrule'
+  timezone: 'Asia/Taipei'  # 使用的時區，在臺灣建議設定為'Asia/Taipei'
+  # 排程設定
+  interval: 3600  # 執行的時間間隔，單位為秒
+  cron: '1 * * * *'  # cron的設定值
+  rrule: 'FREQ=WEEKLY;BYDAY=MO,WE,FR;UNTIL=20231231T160000Z'  # rrule的設定值
+  # cron與rrule的撰寫格式教學：https://docs.prefect.io/2.10.21/concepts/schedules/
 
-  # How to write cron & rrule? check the link below
-  # https://docs.prefect.io/2.10.21/concepts/schedules/
+# 實驗名稱設定
+experiment_name: 'MNIST'  # 顯示在Prefect UI中的實驗名稱
 
-# Experiment name
-experiment_name: 'MNIST'
-developer_name: 'AIF'
-train_data_path: './data/MNIST/train'
+# 模型訓練相關設定
+developer_name: 'AIF'  # 顯示在MLflow UI中的開發者名稱
+train_data_path: './data/MNIST/train'  # 訓練資料對於flows_mnist的相對路徑
+dvc_remote: 's3://dvcmnist/'  # DVC遠端路徑
 
-dvc_remote: 's3://dvcmnist/'
-
-# Model training
-hyperparameter:
+hyperparameter:  # 模型超參數
   random_seed: 12
   val_size: 0.2
   shuffle_data: True
