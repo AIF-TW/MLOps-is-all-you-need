@@ -15,61 +15,42 @@ class Net(nn.Module):
     """
     針對手寫數字辨識建立簡單的CNN模型
     """
-
     def __init__(self):
-        super().__init__()
+        super(Net, self).__init__()
         self.stem = nn.Sequential(
             nn.Conv2d(
                 in_channels=1,
                 out_channels=32,
-                kernel_size=3,
+                kernel_size=5,
                 stride=1,
                 padding='same'
             ),
-            nn.ReLU(),
+            nn.LeakyReLU(),
             nn.MaxPool2d(
                 kernel_size=2
             )
-        )  # Input shape [B, C, W, H] = [-1, 1, 28, 28], output shape [B, C, W, H] = [-1, 32, 14, 14]
+        )
         self.conv1 = nn.Sequential(
             nn.Conv2d(
                 in_channels=32,
-                out_channels=64,
-                kernel_size=3,
+                out_channels=4,
+                kernel_size=5,
                 stride=1,
                 padding='same'
             ),
-            nn.ReLU(),
-            nn.MaxPool2d(
-                kernel_size=2
-            )
-        )  # Output shape [B, C, W, H] = [-1, 64, 7, 7]
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(
-                in_channels=64,
-                out_channels=16,
-                kernel_size=3,
-                stride=1,
-                padding='same'
-            ),
-            nn.ReLU(),
-        )  # Output shape [B, C, W, H] = [-1, 16, 7, 7]
+            nn.LeakyReLU(),
+        )
         self.flatten = nn.Flatten()
         self.classify = nn.Linear(
-            in_features=16 * 7 * 7,
+            in_features=4 * 14 * 14,
             out_features=10
-        )
-        self.softmax = nn.Softmax(
-            dim=1
         )
 
     def forward(self, x):
         x = self.stem(x)
         x = self.conv1(x)
-        x = self.conv2(x)
         x = self.flatten(x)
-        x = self.classify(x)
-        output = self.softmax(x)
+        output = self.classify(x)
 
         return output
 
@@ -175,8 +156,8 @@ def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs
             # 訓練階段
             model.train()
             for idx, (imgs, train_true_labels) in enumerate(train_loader):
-                imgs.to(device)
-                train_true_labels.to(device)
+                imgs = imgs.to(device)
+                train_true_labels = train_true_labels.to(device)
 
                 optimizer.zero_grad()
                 train_outputs = model(imgs)
@@ -201,8 +182,8 @@ def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs
             model.eval()
             with torch.no_grad():
                 for _idx, (imgs, val_true_labels) in enumerate(val_loader):
-                    imgs.to(device)
-                    val_true_labels.to(device)
+                    imgs = imgs.to(device)
+                    val_true_labels = val_true_labels.to(device)
 
                     val_outputs = model(imgs)
 
