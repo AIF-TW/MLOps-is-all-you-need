@@ -240,7 +240,7 @@ docker compose up --build
 接著進入`http://localhost:8888`，即可進到Jupyter Notebook環境。
 
 在執行了幾次模型訓練後，可以進入MLflow UI來檢視剛才紀錄的實驗結果，進入MLflow UI後，點選實驗名稱「MNIST」進入到這個實驗的頁面：
-![image](./png/MLflow_exp)
+![image](./png/MLflow_exp.png)
 
 進入實驗後，點選執行的`run_id`即可檢視該次執行的結果：
 ![image](./png/MLflow_run.png)
