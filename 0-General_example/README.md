@@ -2,8 +2,8 @@
 ## 1 範例介紹
 ### 1.1 簡介
 這份範例的目的是將MLOps的概念進行實現，包含模型訓練的實驗紀錄、版本控制以及部署。
-我們將實際操作以下內容：
-1. 於本機端建立Minio、Prefect、MLflow服務，使用各服務的UI監控模型的訓練、部署等階段，並會以Docker compose一次建立各服務的容器
+我們將實際操作以下內容來模擬真實的開發過程中可能遇到的狀況：
+1. 於本機端建立Minio、Prefect、MLflow服務，使用各服務的UI監控模型的訓練、部署等階段
 2. 使用MLflow追蹤模型訓練結果
 3. 將模型上線進行預測，搜集使用者上傳的資料，投入原先資料集進行再訓練
 4. 透過Prefect對模型再訓練進行自動化的排程
@@ -12,17 +12,17 @@
 ### 1.2 使用到的工具
 在這份範例中我們將用到以下3個開源軟體來進行實作：
 
-* [Minio](https://min.io)
+* [MinIO](https://min.io)
   
-  Minio是一種[物件儲存](https://aws.amazon.com/tw/what-is/object-storage/)服務，API設計成與[Amazon S3](https://aws.amazon.com/tw/s3/)相同，可以用來模擬S3的服務，日後若有需要也可輕易轉換系統。物件儲存有別於檔案儲存，每一個物件在檔案系統中都有獨立的識別碼，因此要調用檔案時無需手動一層一層去搜尋，非常適合用在機器學習任務上或是MLOps中，因為我們直接將模型以及資料物件儲存在系統中，要取出模型進行推論時也相當方便。
+  MinIO是一種[物件儲存](https://aws.amazon.com/tw/what-is/object-storage/)服務，API設計成與[Amazon S3](https://aws.amazon.com/tw/s3/)相同，可以用來模擬S3的服務，日後若有需要也可輕易轉換系統。物件儲存有別於檔案儲存，每一個物件在檔案系統中都有獨立的識別碼，因此要調用檔案時無需手動一層一層去搜尋，非常適合用在機器學習任務上或是MLOps中，因為我們直接將模型以及資料物件儲存在系統中，要取出模型進行推論時也相當方便。
 
 * [Prefect](https://www.prefect.io)
 
     Prefect的主要功能是製作排程，並且能透過一個Agent去執行排程的任務。對於資料科學家來說，只要將模型前處理、訓練等等的工作流程整合到一個`.py`檔，就能將工作流程上傳遠端伺服器進行排程，並選擇要讓程式在哪一台裝置執行（端看Agent在哪一台裝置啟動）。當未來有新資料輸入，或是模型需要再訓練，這些工作流程都能用Prefect安排，團隊也能隨時透過UI監控每個工作的結果。
 
   Prefect有以下這兩項功能：
-  * `task`：`task`是用來裝飾`main`會執行到的函式，Prefect將這些`task`裝飾的函式視為工作流程中的步驟，並以視覺化方式顯示這些步驟的執行資訊，使用者也能在`task`裝飾器自訂這些任務的名稱、重新嘗試次數、重新嘗試的等待時間等等。
-  * `flow`：`flow`用來裝飾`main`函式，可以把`main`函數想成是一套工作流程，裡面包含許多不同函式組成的步驟，而那些步驟都會以`task`裝飾。使用者能在`flow`裝飾器設定重新嘗試的次數、等待時間，以及最長的執行時間限制等等，以達到更有彈性的排程管理。
+  * `task`：用來裝飾`main`會執行到的函式，Prefect將這些`task`裝飾的函式視為工作流程中的步驟，並以視覺化方式顯示這些步驟的執行資訊，使用者也能在`task`裝飾器自訂這些任務的名稱、重新嘗試次數、重新嘗試的等待時間等等。
+  * `flow`：用來裝飾`main`函式，可以把`main`函數想成是一套工作流程，裡面包含許多不同函式組成的步驟，而那些步驟都會以`task`裝飾。使用者能在`flow`裝飾器設定重新嘗試的次數、等待時間，以及最長的執行時間限制等等，以達到更有彈性的排程管理。
   
   這兩樣功能的詳細使用方式可以參考Prefect的[教學](https://docs.prefect.io/latest/tutorial/)。
 
@@ -41,16 +41,16 @@ from prefect import flow, task
 
 @task(name='Model training')  # 以@task裝飾，代表是其中的任務，並且自訂名稱
 def model_training(train_loader, val_loader, data_version, device_name='cpu'):
-    mlflow_run_name = f'Run_1'
     # 需要紀錄資訊的步驟都要在with mlflow.start_run之下進行，並且能自訂run_name作為這次執行的名稱，
     # 如果沒有指定的話MLflow會自動命名為一些無意義的名稱
-    with mlflow.start_run(run_name=mlflow_run_name):
+    with mlflow.start_run(run_name='Run_1'):
         # 紀錄整個實驗的一些標籤，以利管理
         mlflow.set_experiment_tag('developer', 'AIF')  
         # 紀錄這次執行的標籤，例如紀錄模型框架跟訓練裝置
         mlflow.set_tags(
             {
-                'Framework': 'PyTorch'
+                'Framework': 'PyTorch',
+                'Phase': 'Retrain'
             }
         )
 
@@ -64,10 +64,10 @@ def model_training(train_loader, val_loader, data_version, device_name='cpu'):
         
         # 模型的訓練過程
         for i_epoch in range(n_epochs):
-            mlflow.log_metric('Training loss', train_loss, step=i_epoch)  # 紀錄模型評估指標，這邊紀錄loss
-            mlflow.log_metric('Training accuracy', train_acc, step=i_epoch)  # 紀錄模型評估指標，這邊紀錄acc
+            # ...
+            mlflow.log_metric('Training loss', train_loss, step=i_epoch)  # 紀錄模型評估指標
           
-        # 將模型存放在MLflow的物件儲存體中，未來可透過API調用，實現模型部署
+        # 將模型存放在MLflow的物件儲存體中，未來可透過API調用，可用來實現模型部署
         mlflow.pytorch.log_model(model, artifact_path='Model')
 
 @flow(name=f'MNIST', log_prints=True)  # 以@flow裝飾，代表是一個工作流程，同樣可以自訂名稱，log_prints=True代表Prefect會紀錄程式碼的輸出內容
@@ -135,13 +135,15 @@ def main():
 這份範例中所有的`docker-compose.yml`都需搭配相對應的環境變數`.env`，如果沒有放置正確的`.env`會導致服務無法正常執行。
 
 ### 1.4 需求
-無論遠端伺服器或本機端都必須先安裝好Docker。
+您的裝置必須先安裝好Docker以及DVC。
 * [Docker desktop](https://docs.docker.com/desktop/)
+* [DVC](https://dvc.org)
 
 ## 2 建立各項服務的伺服器
 ### 2.1 建立容器
 **注意事項：**
-* 若有更改各服務的連接埠（Port），記得要將相對應的`.env`、`docker-compose.yml`以及UI連結跟著修改。
+* 若有更改各服務的連接埠（Port），記得要將相對應的`.env`、`docker-compose.yml`以及UI連結跟著修改。舉例來說，如果我們將MLflow的連接埠從5050更換成5060，那就必須同時將`server/`底下的`.env`、`docker-compose.yml`裡面跟MLfow相關的環境變數都更改，除此之外，不要忘了`flow_sheduler`、`flow_agent`裡面MLflow相關的設定也都要同步更改。
+* 以下步驟中，在首次建立容器時Docker可能會耗費較多時間下載映像檔，下載完成後通常僅需大約1分鐘即可建立容器，只有`ml_experimentor`因下載`[jupyter](https://jupyter.org)`套件，會需要更多的下載時間。
 
 Server資料夾主要負責將Minio、Prefect、MLflow的伺服器建立起來，讓不同容器以及不同電腦都能存取。
 例如以Prefect來說，程式碼以及執行結果會儲存在伺服器中，MLflow則是會將實驗結果儲存在伺服器中。
@@ -160,31 +162,33 @@ Server資料夾主要負責將Minio、Prefect、MLflow的伺服器建立起來�
 * Prefect UI: `http://localhost:4200/`
 * Minio UI: `http://localhost:9001/`
 
-如果以上服務都可正常存取，就能進入到實作的階段了。
+如果以上服務都可正常進入UI，就能進入到實作的階段了。
 
 ## 3 實作
 確認所需的服務都已建立完成並啟動之後，接著就要透過實作以下幾個主題：
 * 3.1 對資料集進行版本控制
 * 3.2 在模型開發階段中，進行實驗性的訓練
 * 3.3 模型架構、超參數穩定後，進行部署
-* 3.4 利用已部署上線的模型搜集資料，定期再訓練
+* 3.4 設定自動化排程，執行模型的定期再訓練
 
 ### 3.1 對資料集進行版本控制
 在MLOps循環中，資料的版本控制也是重要環節，一般來說開發者除了會用不同的模型、超參數來訓練不同版本的模型，也會使用不同資料（例如在某個版本可能增加一些新標注好的資料）來進行訓練，因此會產生大量以不同版本資料訓練出的模型，這時候就會需要對「資料」進行版本控制。我們知道MLflow能有系統地整理不同模型、超參數的實驗結果；但資料版本間的「差異」通常難以用簡單的幾個數值來作為代表。舉例來說，對於結構化資料，資料的差異可能是新增或移除了某幾列；而對非結構化資料來說，可能是新增或移除了某些檔案，有鑑於此，我們需要類似git的版本控制工具，就像是管理程式碼一樣來管理資料。[Data Version Control (DVC)](https://dvc.org)是著名的開源資料版控工具，提供了命令列介面（Command-line interface）來進行操作，它的特色是操作邏輯與git非常類似，學習成本低，因此在範例中我們選擇DVC作為資料版本控制的工具。
 
 #### 3.1.1 安裝DVC以及基本設定
 # 製作第一版本的資料
+首先我們建立第一個版本的資料集，依照以下指令即可完成建立。
 ````commandline
 git init  # 要使用DVC來做資料版本控制，需要先以git對資料夾進行初始化
 dvc init
-dvc add MNIST
+dvc add MNIST  # MNIST為資料所在的資料夾名稱
 git add .gitignore MNIST.dvc  # git add 後面的檔案順序不影響結果
-git commit -m "First version of training data."  # 以git對.dvc進行版控
+# 執行dvc add MNIST後DVC也會在終端機上輸出這一條訊息，並且告訴使用者可以直接複製來執行
+git commit -m "First version of training data."  # 以git對.dvc進行版控，製作第一個提交
 git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版本時比較方便
 ````
 
 #### 3.1.2 將訓練資料推送至上游以及從上游下載
-之後就能將完整的訓練資料推送至上游（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至上游的儲存空間，需留意空間使用量。
+之後就能將完整的訓練資料推送至上游（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至上游的儲存空間，需留意空間使用量。在此範例執行`dvc push -r remote`通常需要5分鐘左右完成，實際時間會隨裝置效能有所差異；若是推送到網路上的遠端，則會因網路上傳頻寬而有所差異。
 ````commandline
 dvc remote add remote s3://dvcmnist/  # dvc add 後面接的「remote」是自定義的上游名稱
 dvc remote modify remote endpointurl http://localhost:9000
@@ -212,7 +216,7 @@ git add MNIST.dvc
 git commit -m "Add some images"
 git tag -a "v2.0" -m "v2.0, more images"
 dvc push -r remote  # 把這次的更動Push上去
-#git push  # 如果有遠端的git repo可以執行
+# git push  # 如果有遠端的git repo可以執行
 
 ls MNIST/train/0 | wc -l  # 可以透過確認數字0的資料數量來確認版本是否有不同，這個版本要比第一個版本多出一些
 ````
@@ -235,8 +239,16 @@ docker compose up --build
 ````
 接著進入`http://localhost:8888`，即可進到Jupyter Notebook環境。
 
+在執行了幾次模型訓練後，可以進入MLflow UI來檢視剛才紀錄的實驗結果，進入MLflow UI後，點選實驗名稱「MNIST」進入到這個實驗的頁面：
+![image](./png/MLflow_exp)
 
-### 3.3 模型架構、超參數穩定後，進行部署
+進入實驗後，點選執行的`run_id`即可檢視該次執行的結果：
+![image](./png/MLflow_run.png)
+
+可以看到左側有包含「Description」、「Datasets」等等的資訊可以展開，假如我們想要檢視此次的超參數設定，可以點選「Parameters」，就會看到模型訓練時的超參數：
+![image](./png/MLflow_params.png)
+
+### 3.3 模型架構、超參數穩定後，進行部署 [選擇性]
 在上個主題我們已經開發出可以上線部署的模型，接下來我們以Flask架設簡單的網頁，讓使用者上傳手寫數字圖片，接著以模型進行分類，同時蒐集使用者上傳的圖片，並紀錄模型預測結果以及使用者回饋。
 首先在要負責架設網頁的電腦，進到`model_serving/`，執行以下指令：
 ````commandline
@@ -247,7 +259,10 @@ docker compose up --build
 ### 3.4 利用已部署上線的模型搜集資料，定期再訓練
 #### 3.4.1 製作自動化排程，並上傳至Prefect伺服器
 當模型已上線，就能陸續蒐集使用者上傳的資料來更新資料集，定期進行模型再訓練。在這個章節我們透過Prefect來將資料下載、模型訓練、結果追蹤等步驟進行自動化排程。
-首先進到`flow_schedualer/`，執行以下指令，將排程資料上傳到Prefect伺服器：
+
+首先我們需要依實際情況設定`flow_schedualer/flows_mnist/flow.yml`，YAML檔裡附有每一個項目的說明。
+
+接著進到`flow_schedualer/`，執行以下指令，將排程資料上傳到Prefect伺服器：
 ````commandline
 docker compose up --build
 ````
