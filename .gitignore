@@ -3,14 +3,15 @@ __MACOSX/
 .idea/
 .ipynb_checkpoints
 
-dogs-vs-cats/
+MNIST/
 .dvc/
 candidate/
 mlruns/
+ml_experimenter/notebooks/AIF/.*
 
 .dvc.zip
 .git.zip
-dogs-vs-cats.dvc
+MNIST.dvc
 
 server/db_data
 server/minio_data
@@ -22,11 +23,8 @@ flow_scheduler/flows/data/.dvcignore
 flow_scheduler/flows_mnist/data/.gitignore
 flow_scheduler/flows_mnist/data/.dvcignore
 
+
 output.csv
 user_feedback.csv
 detection_result.csv
 .dvcignore
-demo_create_first_version_dvc.sh
-zip_version_ctrl_file.sh
-cat_dog_model.pt
-flow_scheduler/flows/data/dogs-vs-cats.zip
