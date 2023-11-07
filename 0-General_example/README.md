@@ -32,8 +32,8 @@
 
   
 由於MLflow功能眾多，我們先以一段模型訓練的範例程式碼來示範MLflow以及Prefect裡面會用到的幾項功能。 
-  首先我們可以看到其中的`main`與`model_training`函式分別以`@flow`與`@task`裝飾，代表兩者分別是工作流程以及流程中的任務。
-  一般來說模型訓練會包含資料前處理、模型訓練以及指標評估等等步驟，為了記載這些步驟分別花費的時間，以及考量到有些步驟可能會失敗，必須設計重新嘗試機制，這些步驟會被寫成不同的函式。
+首先我們可以看到其中的`main`與`model_training`函式分別以`@flow`與`@task`裝飾，代表兩者分別是工作流程以及流程中的任務。
+一般來說模型訓練會包含資料前處理、模型訓練以及指標評估等等步驟，為了記載這些步驟分別花費的時間，以及考量到有些步驟可能會失敗，必須設計重新嘗試機制，這些步驟會被寫成不同的函式。
 
 ````python
 import mlflow
@@ -176,8 +176,9 @@ Server資料夾主要負責將Minio、Prefect、MLflow的伺服器建立起來�
 
 #### 3.1.1 安裝DVC以及基本設定
 # 製作第一版本的資料
-首先我們建立第一個版本的資料集，依照以下指令即可完成建立。
+首先我們在本機端建立第一個版本的資料集，依照以下指令即可完成建立。
 ````commandline
+cd flow_scheduler/flows_mnist/data/
 git init  # 要使用DVC來做資料版本控制，需要先以git對資料夾進行初始化
 dvc init
 dvc add MNIST  # MNIST為資料所在的資料夾名稱
@@ -188,7 +189,7 @@ git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版
 ````
 
 #### 3.1.2 將訓練資料推送至上游以及從上游下載
-之後就能將完整的訓練資料推送至上游（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至上游的儲存空間，需留意空間使用量。在此範例執行`dvc push -r remote`通常需要5分鐘左右完成，實際時間會隨裝置效能有所差異；若是推送到網路上的遠端，則會因網路上傳頻寬而有所差異。
+之後就能將完整的訓練資料推送至上游（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至上游的儲存空間，需留意空間使用量。在此範例執行`dvc push -r remote`通常需要5分鐘左右完成，實際時間會隨裝置效能有所差異；若是推送到網路上的遠端，則會因網路上傳頻寬而有所差異。由於要將版本控制相關檔案推送至遠端，因此必須先完成步驟2.1，建立好要讓DVC使用的物件儲存空間。
 ````commandline
 dvc remote add remote s3://dvcmnist/  # dvc add 後面接的「remote」是自定義的上游名稱
 dvc remote modify remote endpointurl http://localhost:9000
@@ -256,9 +257,11 @@ docker compose up --build
 ````
 接著進入`http://localhost:10000`，即可上傳圖片進行預測。
 
+**注意事項：** 必須先在步驟3.2至少設定一個「Production」階段的模型，才能讓MLflow自動到資料庫下載模型進行預測。
+
 ### 3.4 利用已部署上線的模型搜集資料，定期再訓練
 #### 3.4.1 製作自動化排程，並上傳至Prefect伺服器
-當模型已上線，就能陸續蒐集使用者上傳的資料來更新資料集，定期進行模型再訓練。在這個章節我們透過Prefect來將資料下載、模型訓練、結果追蹤等步驟進行自動化排程。
+當模型已上線，就能陸續蒐集使用者上傳的資料來更新資料集，定期進行模型再訓練。這個章節我們將透過Prefect來將資料下載、模型訓練、結果追蹤等步驟進行自動化排程。
 
 首先我們需要依實際情況設定`flow_schedualer/flows_mnist/flow.yml`，YAML檔裡附有每一個項目的說明。
 
@@ -266,7 +269,7 @@ docker compose up --build
 ````commandline
 docker compose up --build
 ````
-建立這個容器的目的，是將`Flows`資料夾的檔案上傳到Prefect的伺服器，容器執行完成後就會關閉不再重新啟動。執行時須留意，由於會將`flows/`資料夾中未被`.prefectignore`提及的任何檔案都會被上傳到伺服器，當檔案較多或包含大型檔案時，需要比較久的時間完成。
+這個容器的目的，是將`Flows`資料夾的檔案上傳到Prefect的伺服器，容器執行完成後就會關閉不再重新啟動。執行時須留意，由於會將`flows/`資料夾中未被`.prefectignore`提及的任何檔案都會被上傳到伺服器，當檔案較多或包含大型檔案時，需要比較久的時間完成。
 當容器成功建立，會看到包含以下文字的訊息：
 ````
 flow_scheduler  | Created work pool 'cpu_pool'.
@@ -287,9 +290,9 @@ flow_scheduler exited with code 0
 
 #### 3.4.2 建立Agent來執行排程
 排程建立之後，便等待著Agent來執行，我們可以把Agent想像成機器人，只要事先把排程告訴Agent，它就會依照排程指定的時間去Prefect伺服器下載`flows/`資料夾，並且執行我們指定的`py`檔（此範例為`flow.py`）。
-在專案中我們可根據需求來決定Agent要在哪一個裝置啟動，例如當任務是深度學習模型訓練，自然就可能選擇配備GPU的電腦來執行；如果是資料下載或前處理，則可能選擇配有較強CPU的電腦。Agent同樣是以容器來啟動：
+在專案中我們可根據需求來決定Agent要在哪一個裝置啟動，例如當任務是深度學習模型訓練，自然就可能選擇配備GPU的電腦來執行；如果是資料下載或前處理，則可能選擇配有較強CPU的電腦，此範例以CPU版本進行說明，若您使用配有CUDA資源的裝置，可改為GPU版本。Agent同樣是以容器來啟動：
 ````commandline
-cd flow_agent/
+cd flow_agent/flow_agent_pool_ml_cpu/  # 若要啟動GPU版本的Agent，則將'flow_agent_pool_ml_cpu'改為'flow_agent_pool_ml_gpu'
 docker compose up --build
 ````
 
@@ -307,4 +310,4 @@ docker compose up --build
 
 * 補充：如果建立容器時在`docker compose up`加入`-d`，讓容器在背景執行，Docker便不會將輸出的資訊顯示在終端機，此時可以進到`flow_agent/`執行`docker compose logs`來查看容器執行時的輸出資訊。
 
-**注意事項：** 須先完成3.4.1步驟，才可執行3.4.2步驟。
+**注意事項：** 須先完成3.4.1步驟建立排程，才可執行3.4.2步驟來執行。

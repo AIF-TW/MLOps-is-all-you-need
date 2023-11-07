@@ -9,6 +9,7 @@ services:
       - 8888:8888
     volumes:
       - ./notebooks:/home
+      - ../flow_scheduler/flows_mnist/data:/home/user/mnist_example/data
     user: root
     environment:
       # for mlflow
