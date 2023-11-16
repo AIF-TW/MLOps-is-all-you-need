@@ -1,0 +1,7 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.DS_Store
+mlruns/
+*.csv
+*.env
+*.b
