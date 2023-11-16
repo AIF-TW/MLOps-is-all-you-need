@@ -15,6 +15,20 @@ import joblib
 - 收集新資料來重新訓練 (Based on QUICK START的案例做延伸) 再上傳
 '''
 
+class TitanicPredict(mlflow.pyfunc.PythonModel):
+    """Custom pyfunc class used to create customized mlflow models"""
+    def load_context(self, context):
+        import joblib
+        self.preprocessor = joblib.load(context.artifacts["preprocessor"])
+        self.model = joblib.load(context.artifacts["model"])
+
+    def predict(self, context, model_input):
+        numerical_features = ['Age', 'SibSp', 'Parch', 'Fare']
+        model_input[numerical_features] = self.preprocessor.transform(model_input[numerical_features])
+        prediction = self.model.predict(model_input)
+        return prediction
+    
+
 def mlflowSet():
     # MLflow 環境設定
     load_dotenv('.env')
@@ -76,8 +90,21 @@ def experiment():
             'C': 1,
             'kernel':'rbf',
         })
-        mlflow.log_artifact("preprocessor.b",
-                            artifact_path="preprocessor")
+
+        # 上傳前處理模型
+        artifacts = { # this dict will server to XGBmodel as 'context.artifacts'
+            'preprocessor': 'preprocessor.b',
+            'model':'model.joblib'
+        }
+        
+        with open('model.joblib', 'wb+') as f: 
+            joblib.dump(model_svc, f)
+
+        mlflow.pyfunc.log_model(
+            artifact_path="model",
+            python_model=TitanicPredict(),
+            artifacts=artifacts
+        )
 
         # 設定需要被紀錄的評估指標
         mlflow.log_metric("Test Accuracy", accuracy_svc)
