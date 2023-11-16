@@ -9,24 +9,20 @@ from datetime import datetime
 import gdown
 import joblib
 
-'''
-- 上傳前處理方式
-- 下載前處理方式並拿來做預測
-- 收集新資料來重新訓練 (Based on QUICK START的案例做延伸) 再上傳
-'''
 
 class TitanicPredict(mlflow.pyfunc.PythonModel):
     """Custom pyfunc class used to create customized mlflow models"""
     def load_context(self, context):
+        # called when mlflow.pyfunc.load_model
         import joblib
         self.preprocessor = joblib.load(context.artifacts["preprocessor"])
         self.model = joblib.load(context.artifacts["model"])
 
     def predict(self, context, model_input):
+        # called when model.predict 
         numerical_features = ['Age', 'SibSp', 'Parch', 'Fare']
         model_input[numerical_features] = self.preprocessor.transform(model_input[numerical_features])
-        prediction = self.model.predict(model_input)
-        return prediction
+        return self.model.predict(model_input)
     
 
 def mlflowSet():
@@ -56,7 +52,7 @@ def experiment():
     scaler = MinMaxScaler()
     X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
     
-    joblib.dump(MinMaxScaler, 'preprocessor.b')
+    joblib.dump(scaler, 'preprocessor.b')
 
     # 建立模型
     model_svc = SVC(C=1.0,        # Regularization parameter
@@ -81,6 +77,7 @@ def experiment():
     now = datetime.now()
     dt_string = now.strftime("%Y-%m-%d %H-%M-%S")
     with mlflow.start_run(run_name='Run_%s' % dt_string):
+
         # 設定開發者名稱
         mlflow.set_experiment_tag('developer', 'GU')
 
@@ -91,27 +88,24 @@ def experiment():
             'kernel':'rbf',
         })
 
-        # 上傳前處理模型
-        artifacts = { # this dict will server to XGBmodel as 'context.artifacts'
-            'preprocessor': 'preprocessor.b',
-            'model':'model.joblib'
+        # 設定需要被紀錄的評估指標
+        mlflow.log_metric("Test Accuracy", accuracy_svc)
+
+        # 上傳前處理模型與訓練好的模型
+        artifacts = { # this dict will server to model as 'context.artifacts'
+            'preprocessor': 'preprocessor.b', # value = 路徑
+            'model':'model.b' # value = 路徑
         }
         
-        with open('model.joblib', 'wb+') as f: 
+        with open('model.b', 'wb+') as f: 
             joblib.dump(model_svc, f)
 
         mlflow.pyfunc.log_model(
-            artifact_path="model",
-            python_model=TitanicPredict(),
+            artifact_path="Model",
+            python_model=TitanicPredict(), # 自定義 class
             artifacts=artifacts
         )
-
-        # 設定需要被紀錄的評估指標
-        mlflow.log_metric("Test Accuracy", accuracy_svc)
-        # 上傳訓練好的模型
-        mlflow.sklearn.log_model(model_svc, 
-                                artifact_path='Model'
-                                )
+        
 
 def deployment():
     # 獲得實驗編號
@@ -135,18 +129,30 @@ def deployment():
     # 將註冊後的模型加入版本號(Staging, Production, Archived)
     client = MlflowClient(tracking_uri=os.getenv('MLFLOW_TRACKING_URI'))
     client.transition_model_version_stage(
-        name="Titanic_model", version=int(mv.version), stage="Production"
+        name="Titanic_model", version=int(mv.version), stage="Staging"
     )
 
     # 下載註冊後的模型, 並使用MLflow 讀取模型
     model_name = "Titanic_model"
-    stage = "Production"
+    stage = "Staging"
 
-    model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{stage}")
-    
+    model = mlflow.pyfunc.load_model(f"models:/{model_name}/{stage}")
+
+    test = pd.DataFrame()
+    test["Age"] = [40]
+    test["SibSp"] = [3]
+    test["Parch"] = [0.0]
+    test["Fare"] = [7.5]
+
+    if model.predict(test)[0]:
+        print("Survived")
+    else:
+        print("Dead")
+
 def main():
     mlflowSet()
     experiment()
+    deployment()
 
 
 
