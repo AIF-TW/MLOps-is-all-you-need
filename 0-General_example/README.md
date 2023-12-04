@@ -3,7 +3,7 @@
 ### 1.1 簡介
 這份範例的目的是將MLOps的概念進行實現，包含模型訓練的實驗紀錄、版本控制以及部署。
 我們將實際操作以下內容來模擬真實的開發過程中可能遇到的狀況：
-1. 於本機端建立Minio、Prefect、MLflow服務，使用各服務的UI監控模型的訓練、部署等階段
+1. 於本機端建立MinIO、Prefect、MLflow服務，使用各服務的UI監控模型的訓練、部署等階段
 2. 使用MLflow追蹤模型訓練結果
 3. 將模型上線進行預測，搜集使用者上傳的資料，投入原先資料集進行再訓練
 4. 透過Prefect對模型再訓練進行自動化的排程
@@ -129,7 +129,7 @@ def main():
 
 * 環境變數 `.env`
 
-  環境變數全部存在`.env`檔案中，內容是各項服務所需要的環境變數。考量到裡面有較為機敏的資料如使用者帳號密碼，統一整理在`.env`檔裡面的好處是除了比較便於管理，也可以透過Python的[dotenv](https://pypi.org/project/python-dotenv/)來載入環境變數。
+  環境變數全部存在`.env`檔案中，內容是各項服務所需要的環境變數。考量到裡面有較為機敏的資料如使用者帳號密碼，統一整理在`.env`檔裡面的好處是比較便於管理，此外也可以透過Python的[dotenv](https://pypi.org/project/python-dotenv/)來載入環境變數。
 
 **注意事項：**
 這份範例中所有的`docker-compose.yml`都需搭配相對應的環境變數`.env`，如果沒有放置正確的`.env`會導致服務無法正常執行。
@@ -143,16 +143,16 @@ def main():
 ### 2.1 建立容器
 **注意事項：**
 * 若有更改各服務的連接埠（Port），記得要將相對應的`.env`、`docker-compose.yml`以及UI連結跟著修改。舉例來說，如果我們將MLflow的連接埠從5050更換成5060，那就必須同時將`server/`底下的`.env`、`docker-compose.yml`裡面跟MLfow相關的環境變數都更改，除此之外，不要忘了`flow_sheduler`、`flow_agent`裡面MLflow相關的設定也都要同步更改。
-* 以下步驟中，在首次建立容器時Docker可能會耗費較多時間下載映像檔，下載完成後通常僅需大約1分鐘即可建立容器，只有`ml_experimentor`因下載`[jupyter](https://jupyter.org)`套件，會需要更多的下載時間。
+* 以下步驟中，在首次建立容器時Docker可能會耗費較多時間下載映像檔，下載完成後通常僅需大約1分鐘即可建立容器，只有`ml_experimentor`因下載[Jupyter](https://jupyter.org)套件，會需要更多的下載時間。
 
-Server資料夾主要負責將Minio、Prefect、MLflow的伺服器建立起來，讓不同容器以及不同電腦都能存取。
+Server資料夾主要負責將MinIO、Prefect、MLflow的伺服器建立起來，讓不同容器以及不同電腦都能存取。
 例如以Prefect來說，程式碼以及執行結果會儲存在伺服器中，MLflow則是會將實驗結果儲存在伺服器中。
 透過資料夾中的`docker-compose.yml`一次建立所有服務，步驟如下：
 ````shell
 1. cd server/
 2. docker compose up --build
-# -d用意為讓docker建立容器時在背景執行，將不會顯示各個容器的輸出資訊，
-# 為了避免有容器建立過程發生問題而沒注意到，建議初次使用先不要加上-d
+# 加上-d是為了讓docker建立容器時在背景執行，不顯示各個容器的輸出資訊，因此不會佔用一個終端機視窗
+# 為了避免有容器建立過程發生問題而沒注意到，建議初次使用先不加上-d
 ````
 
 ### 2.2 測試容器是否正常建立
@@ -190,6 +190,10 @@ git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版
 
 #### 3.1.2 將訓練資料推送至上游以及從上游下載
 之後就能將完整的訓練資料推送至上游（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至上游的儲存空間，需留意空間使用量。在此範例執行`dvc push -r remote`通常需要5分鐘左右完成，實際時間會隨裝置效能有所差異；若是推送到網路上的遠端，則會因網路上傳頻寬而有所差異。由於要將版本控制相關檔案推送至遠端，因此必須先完成步驟2.1，建立好要讓DVC使用的物件儲存空間。
+
+**注意事項：**
+步驟3.1.2至3.1.3也可以透過執行「`data_version.sh`」一次完成。
+
 ````commandline
 dvc remote add remote s3://dvcmnist/  # dvc add 後面接的「remote」是自定義的上游名稱
 dvc remote modify remote endpointurl http://localhost:9000
@@ -211,6 +215,9 @@ dvc pull --remote remote
 
 #### 3.1.3 模擬產生新版本的資料
 首先我們將`train_v2`的資料拷貝到對應的類別，例如`train_v2/0/`底下的所有資料都拷貝到`train/0/`，依此類推直到10個類別都完成，我們透過這個過程來模擬增加資料後，作為第二個版本的狀況。
+
+您可以透過執行「`expand_train_data.py`」來一次完成拷貝的步驟。
+
 ````commandline
 dvc add MNIST
 git add MNIST.dvc
@@ -310,4 +317,5 @@ docker compose up --build
 
 * 補充：如果建立容器時在`docker compose up`加入`-d`，讓容器在背景執行，Docker便不會將輸出的資訊顯示在終端機，此時可以進到`flow_agent/`執行`docker compose logs`來查看容器執行時的輸出資訊。
 
-**注意事項：** 須先完成3.4.1步驟建立排程，才可執行3.4.2步驟來執行。
+**注意事項：**
+須先完成3.4.1步驟建立排程，才可執行3.4.2步驟來執行。

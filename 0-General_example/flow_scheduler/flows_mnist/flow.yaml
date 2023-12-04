@@ -8,7 +8,7 @@ deployment:
   flow_name: main  # 建議設定為專案名稱，與flow.py裡面以「@flow」裝飾的主函式名稱相同
   deploy_name: model_training_mnist  # 目的，如daliy_model、data_update
 
-  pool_name: gpu_pool  # 要調用的運算資源
+  pool_name: cpu_pool  # 要調用的運算資源
   queue_name: ml  # 專案名稱
 
 # 排程相關設定
