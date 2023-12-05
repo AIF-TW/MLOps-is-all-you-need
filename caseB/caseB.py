@@ -63,6 +63,8 @@ def experiment():
 
     # 評估指標
     y_pred = model_svc.predict(X_train)
+    joblib.dump(model_svc, 'model.b')
+
     accuracy_svc = (y_pred == y_train).sum()/y_train.shape[0]
     
     # MLflow 實驗名稱設定
@@ -92,13 +94,11 @@ def experiment():
         mlflow.log_metric("Test Accuracy", accuracy_svc)
 
         # 上傳前處理模型與訓練好的模型
-        artifacts = { # this dict will server to model as 'context.artifacts'
+        artifacts = { 
+            # this dict will server to model as 'context.artifacts'
             'preprocessor': 'preprocessor.b', # value = 路徑
             'model':'model.b' # value = 路徑
         }
-        
-        with open('model.b', 'wb+') as f: 
-            joblib.dump(model_svc, f)
 
         mlflow.pyfunc.log_model(
             artifact_path="Model",
