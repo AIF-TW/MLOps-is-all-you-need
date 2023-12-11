@@ -199,7 +199,7 @@ cd MLOps-is-all-you-need
 
 3. 同時也可以在 `Prefect` 的 GUI 介面看到新加入的排程
 
-![flow_scheduler_success_ui](png/flow_scheduler_success_ui.png){background-color:transparent}
+![flow_scheduler_success_ui](png/flow_scheduler_success_ui.png)
 
 ### 工作流程的執行服務 Flow Agent
 此服務在快速安裝時，僅利用範例專案做測試，測試後刪除。詳細使用方法請參考 `快速使用` 章節。
