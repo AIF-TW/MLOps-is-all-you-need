@@ -142,21 +142,15 @@ cd MLOps-is-all-you-need
     ```
 
 3. 確保正常啟動後，可以透過在瀏覽器輸入對應的網址，開始使用以下 GUI 的服務
-- MinIO
-    - 網址: `http://localhost:9001` 
-    - 網頁範例：
+- MinIO (網址: `http://localhost:9001`)
 
-    ![minio_s3_success_ui](png/minio_s3_success_ui.png)
-- MLflow
-    - 網址: `http://localhost:5050` 
-    - 網頁範例：
+![minio_s3_success_ui](png/minio_s3_success_ui.png)
+- MLflow (網址: `http://localhost:5050`)
 
-    ![mlflow_server_success_ui](png/mlflow_server_success_ui.png)
-- Prefect
-    - 網址: `http://localhost:4200` 
-    - 網頁範例：
-    
-    ![prefect_server_success_ui](png/prefect_server_success_ui.png)
+![mlflow_server_success_ui](png/mlflow_server_success_ui.png)
+- Prefect (網址: `http://localhost:4200`)
+
+![prefect_server_success_ui](png/prefect_server_success_ui.png)
 
 
 ### 開發環境 ML Experimenter
