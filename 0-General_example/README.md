@@ -1,26 +1,18 @@
 # 案例A––以手寫數字資料集實作系統建置與執行實驗
 ## 1 範例介紹
 ### 1.1 簡介
-這份範例的目的是將MLOps的概念進行實現，包含模型訓練的實驗紀錄、版本控制以及部署。
-我們將實際操作以下內容來模擬真實的開發過程中可能遇到的狀況：
-1. 於本機端建立MinIO、Prefect、MLflow服務，使用各服務的UI監控模型的訓練、部署等階段
+這份範例的目的是以手寫數字資料集，實際操作以下幾個步驟：
+1. 透過DVC進行資料版本控制
 2. 使用MLflow追蹤模型訓練結果
-3. 將模型上線進行預測，搜集使用者上傳的資料，投入原先資料集進行再訓練
-4. 透過Prefect對模型再訓練進行自動化的排程
+3. 透過Prefect對模型再訓練進行自動化的排程
 
-
-### 1.2 使用到的工具
+### 1.2 使用的工具
 在這份範例中我們將用到以下3個開源軟體來進行實作：
+* [MinIO](https://min.io)：MinIO是一種[物件儲存](https://aws.amazon.com/tw/what-is/object-storage/)服務，物件儲存有別於檔案儲存，每一個物件在檔案系統中都有獨立的識別碼，適合用在機器學習任務上或是MLOps中。
 
-* [MinIO](https://min.io)
-  
-  MinIO是一種[物件儲存](https://aws.amazon.com/tw/what-is/object-storage/)服務，API設計成與[Amazon S3](https://aws.amazon.com/tw/s3/)相同，可以用來模擬S3的服務。物件儲存有別於檔案儲存，每一個物件在檔案系統中都有獨立的識別碼，因此要調用檔案時無需手動一層一層去搜尋，非常適合用在機器學習任務上或是MLOps中，因為我們直接將模型以及資料物件儲存在系統中，要取出模型進行推論時也相當方便。
+* [Prefect](https://www.prefect.io)：Prefect的主要功能是製作排程，並且能透過一個Agent去執行排程的任務。只要將模型前處理、訓練等等的工作流程整合到一個Python檔案，就能將工作流程上傳遠端伺服器進行排程，並選擇要讓程式在哪一台裝置執行，團隊成員也能隨時透過UI監控每個工作的狀態。
 
-* [Prefect](https://www.prefect.io)
-
-    Prefect的主要功能是製作排程，並且能透過一個Agent去執行排程的任務。只要將模型前處理、訓練等等的工作流程整合到一個Python檔案，就能將工作流程上傳遠端伺服器進行排程，並選擇要讓程式在哪一台裝置執行，團隊成員也能隨時透過UI監控每個工作的狀態。
-
-  Prefect有以下這兩項功能：
+  範例中會用到以下這兩項常用功能：
   * [`task`](https://docs.prefect.io/latest/concepts/tasks/)：用來裝飾`main`會執行到的函式，Prefect將這些`task`裝飾的函式視為工作流程中的步驟，並以視覺化方式顯示這些步驟的執行資訊，使用者也能在`task`裝飾器自訂這些任務的名稱、重新嘗試次數、重新嘗試的等待時間等等。
   * [`flow`](https://docs.prefect.io/latest/concepts/flows/)：用來裝飾`main`函式，可以把`main`函數想成是一套工作流程，裡面包含許多不同函式組成的步驟，而那些步驟都會以`task`裝飾。使用者能在`flow`裝飾器設定重新嘗試的次數、等待時間，以及最長的執行時間限制等等，以達到更有彈性的排程管理。例如：
   ````python
@@ -42,25 +34,18 @@
   首先我們可以看到其中的`main`與`model_training`函式分別以`@flow`與`@task`裝飾，代表兩者分別是工作流程以及流程中的任務。
   一般來說模型訓練會包含資料前處理、模型訓練以及指標評估等等步驟，為了記載這些步驟分別花費的時間，以及考量到有些步驟可能會失敗，必須設計重新嘗試機制，這些步驟會被寫成不同的函式。
   
-  詳細使用方式可以參考Prefect的[教學](https://docs.prefect.io/latest/tutorial/)。
+  更多詳細使用方式可以參考Prefect的[教學](https://docs.prefect.io/latest/tutorial/)。
 
-* [MLflow](https://mlflow.org)
-
-    MLflow能追蹤模型，紀錄實驗結果，也提供簡單易懂的視覺化工具。除了實驗紀錄，MLflow能將模型進行版本控制，以及透過API的方式載入模型物件，並能用來推論，這些功能可以透過指令列以及圖形化介面達成。
+* [MLflow](https://mlflow.org)：MLflow能追蹤模型，紀錄實驗結果，也提供簡單易懂的視覺化工具。除了實驗紀錄，MLflow能將模型進行版本控制，以及透過API的方式載入模型物件，並能用來推論，這些功能可以透過指令列以及圖形化介面達成。
 
 ### 1.3 資料夾內容說明 
 這份範例包含以下資料夾：
 * [`flow_schedualer/`](./flow_scheduler/)：任務相關檔案，主要包含模型訓練的.py檔、訓練資料等。訓練資料為[`flow_scheduler/flows_mnist/data/MNIST.zip`](./flow_scheduler/flows_mnist/data/MNIST.zip)，下載後須先解壓縮。
-* [`flow_agent/`](./flow_agent/)：從本機端部署任務到伺服器上所需的檔案。
-* [`server/`](./server/)：在伺服端將服務架設起來所需的檔案。
-* [`ml_experimenter/`](./ml_experimenter/)：以Jupyter容器模擬工程師進行模型開發的環境，可以在Jupyter Lab中進行不同資料集的模型訓練，並使用MLflow來進行實驗追蹤與模型版本控制，以及透過MLflow API，以訓練好的模型對資料進行預測。
+* [`flow_agent/`](./flow_agent/)：建立負責執行排程的代理者（Agent）。
+* [`ml_experimenter/`](./ml_experimenter/)：以Jupyter容器模擬工程師進行模型開發的環境，進行資料集的模型訓練、使用MLflow來進行實驗追蹤與模型版本控制，以及透過MLflow API，以訓練好的模型對資料進行預測。
 
 資料夾中通常包含以下幾種類型的檔案：
-* `docker-compose.yml`
-
-  由[docker compose](https://docs.docker.com/compose/)透過[`docker-compose.yml`](https://docs.docker.com/compose/compose-file/03-compose-file/)來建立各自的容器。檔案中包含部分需修改的項目，請參考註解。
-
-  `docker-compose.yml`裡面較常見的設定及其意義為：
+* `docker-compose.yml`：由[Docker](https://docs.docker.com/compose/)透過[`docker-compose.yml`](https://docs.docker.com/compose/compose-file/03-compose-file/)來建立各自的容器。`docker-compose.yml`有幾個常見的項目：
   * `restart`：選擇滿足何種條件時容器將重新啟動。
   * `image`：用來建立容器的映像檔。
   * `ports`：格式為`主機的Port:容器的連接埠（Port）`，例如`5050:5002`代表將主機的5050連接埠綁定容器的5002連接埠。
@@ -68,31 +53,10 @@
   * `volumes`：容器要掛載的目錄，格式為`主機上的路徑:容器內的路徑`，例如`data:/data`代表將主機目前目錄下的`data`掛載到容器內的`/data`。
   * `entrypoint`：容器啟動後首先要被執行的指令。
 
-* 環境變數 `.env`
+* 環境變數`.env`：各項服務所需要的環境變數，也可透過Python的[dotenv](https://pypi.org/project/python-dotenv/)套件載入。
 
-  環境變數全部存在`.env`檔案中，內容是各項服務所需要的環境變數。考量到裡面有較為機敏的資料如使用者帳號密碼，統一整理在`.env`檔裡面的好處是比較便於管理，此外也可以透過Python的[dotenv](https://pypi.org/project/python-dotenv/)來載入環境變數。
-
-**注意事項：**
-這份範例中所有的`docker-compose.yml`都需搭配相對應的環境變數`.env`，如果沒有放置正確的`.env`會導致服務無法正常執行。
-
-## 2 建立各項服務的伺服器
-### 2.1 建立容器
-**注意事項：**
-* 若有更改各服務的連接埠（Port），記得要將相對應的`.env`、`docker-compose.yml`以及UI連結跟著修改。舉例來說，如果我們將MLflow的連接埠從5050更換成5060，那就必須同時將`server/`底下的`.env`、`docker-compose.yml`裡面跟MLfow相關的環境變數都更改，除此之外，不要忘了`flow_sheduler`、`flow_agent`裡面MLflow相關的設定也都要同步更改。
-* 以下步驟中，在首次建立容器時Docker可能會耗費較多時間下載映像檔，下載完成後通常僅需大約1分鐘即可建立容器，只有`ml_experimentor`因下載[Jupyter](https://jupyter.org)套件，會需要更多的下載時間。
-
-Server資料夾主要負責將MinIO、Prefect、MLflow的伺服器建立起來，讓不同容器以及不同電腦都能存取。
-例如以Prefect來說，程式碼以及執行結果會儲存在伺服器中，MLflow則是會將實驗結果儲存在伺服器中。
-透過資料夾中的`docker-compose.yml`一次建立所有服務，步驟如下：
-````commandline
-cd server/
-docker compose up --build
-# 加上-d是為了讓docker建立容器時在背景執行，不顯示各個容器的輸出資訊，因此不會佔用一個終端機視窗
-# 為了避免有容器建立過程發生問題而沒注意到，建議初次使用先不加上-d
-````
-
-### 2.2 測試容器是否正常建立
-容器開啟完成後，可前往下列各服務的連結，確認UI是否正常運作。若UI未出現，建議到各容器去查看輸出紀錄是否有錯誤碼，以及確認伺服器端是否正常運作。
+## 2 測試服務是否正常建立
+此範例需要用到「`quick-install`」建立的服務，建議先前往下列各服務的UI連結，確認是否正常運作：
 
 * MLflow UI: [`http://localhost:5050/`](http://localhost:5050/)
 * Prefect UI: [`http://localhost:4200/`](http://localhost:4200/)
@@ -124,26 +88,25 @@ git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版
 ````
 
 #### 3.1.2 將訓練資料推送至上游以及從上游下載
-之後就能將完整的訓練資料推送至上游（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至上游的儲存空間，需留意空間使用量。在此範例執行`dvc push -r remote`通常需要5分鐘左右完成，實際時間會隨裝置效能有所差異；若是推送到網路上的遠端，則會因網路上傳頻寬而有所差異。由於要將版本控制相關檔案推送至遠端，因此必須先完成步驟2.1，建立好要讓DVC使用的物件儲存空間。
+之後就能將完整的訓練資料推送至上游（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至上游的儲存空間，需留意空間使用量。
 
 **注意事項：**
 步驟3.1.2至3.1.3也可以透過執行「[`data_version.sh`](./flow_scheduler/flows_mnist/data/data_version.sh)」一次完成。
 
 ````commandline
-dvc remote add remote s3://dvcmnist/  # dvc add 後面接的「remote」是自定義的上游名稱
+dvc remote add remote s3://dvc/  # dvc add 後面接的「remote」是自定義的上游名稱
 dvc remote modify remote endpointurl http://localhost:9000
 export AWS_ACCESS_KEY_ID=admin
 export AWS_SECRET_ACCESS_KEY=adminsecretkey
 dvc push -r remote  # 把這次的更動推送上到名為remote的遠端上
 
 # ls MNIST/train/0 | wc -l  # 可以透過確認數字0的資料數量來確認版本
-
 ````
 未來要下載上游的資料（例如在新的電腦或容器上），先下載`MNIST.dvc`，再執行以下程式碼：
 ````commandline
 export AWS_ACCESS_KEY_ID=admin
 export AWS_SECRET_ACCESS_KEY=adminsecretkey
-dvc remote add remote s3://dvcmnist/
+dvc remote add remote s3://dvc/
 dvc remote modify remote endpointurl http://localhost:9000
 dvc pull --remote remote
 ````

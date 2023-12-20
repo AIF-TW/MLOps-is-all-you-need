@@ -8,7 +8,7 @@ git add .gitignore MNIST.dvc  # git add 後面的檔案順序可對調
 git commit -m "First version of training data."  # 以git對.dvc進行版控
 git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版本時比較方便
 
-dvc remote add remote s3://dvcmnist/  # remote為自定義的遠端名稱
+dvc remote add remote s3://dvc/  # remote為自定義的遠端名稱
 dvc remote modify remote endpointurl http://localhost:9000
 export AWS_ACCESS_KEY_ID=admin
 export AWS_SECRET_ACCESS_KEY=adminsecretkey
