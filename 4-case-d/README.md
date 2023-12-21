@@ -1,15 +1,15 @@
 # 案例D-建立多GPU實驗環境
 
 ## 1 範例介紹
-多人團隊進行協作時，如果有配備GPU的電腦，就能善用每一個GPU作為一個Agent來同時執行多個排程。在此範例中我們將建立適合多人使用的[Prefect Work pools](https://docs.prefect.io/2.14.3/concepts/work-pools/)，模擬當手上有多GPU，又有多個排程要進行時可以怎麼使用Prefect。
+多人團隊進行協作時，如果有多個GPU的裝置，就能善用每一個GPU作為一個Agent來同時執行多個排程。在此範例中我們將建立適合多人使用的[Prefect Work pools](https://docs.prefect.io/2.14.3/concepts/work-pools/)，模擬當手上有多GPU，又有多個排程要進行時可以怎麼使用Prefect。
 
 主要步驟有：
-1. 在每一張顯示卡上各自建立Prefect Agent
+1. 在每一張GPU上各自建立Prefect Agent
 2. 建立多個排程，並上傳到不同的GPU裝置
 
 ## 2 實作
 **注意事項：**
-此範例需要用到範例0所建立的服務（MinIO、Prefect、MLflow等），實作前須確認上述服務都正常運作，且執行完範例0的所有步驟。
+此範例需要用到[0-Quick-install](https://)所建立的服務（MinIO、Prefect、MLflow等），實作前須確認上述服務都正常運作。
 
 首先開啟[NVIDIA System Management Interface](https://developer.nvidia.com/nvidia-system-management-interface)來確認顯示卡以及[CUDA](https://www.nvidia.com/zh-tw/geforce/technologies/cuda/)是否已設定好：
 
@@ -25,8 +25,8 @@
 
 
 ### 2.1.2 分別建立兩個排程，上傳到Prefect伺服器
-#### 2.1.2.1 建立「MNIST_gpu_0」排程
-如果是在單GPU設備，就不需要執行2.1.2.2。
+#### 2.1.2-a 建立「MNIST_gpu_0」排程
+如果是在單GPU設備，就不需要執行2.1.2-b。
 
 建立Docker Compose之前請確認`flow_scheduler/flow_scheduler/.env`裡面的`FLOW_DIR`設定為「`FLOW_DIR='./flows_mnist_gpu_0'`」。
 
@@ -35,8 +35,8 @@ cd flow_scheduler/flow_scheduler/
 docker compose up -d --build
 ````
 
-#### 2.1.2.2 建立「MNIST_gpu_1」排程
-此步驟跟2.1.2.1在相同的路徑下執行，但因為這兩個步驟是要建立不同排程，因此要上傳不同的`flows`資料夾。建立Docker Compose之前請先到`flow_scheduler/flow_scheduler/.env`裡面的`FLOW_DIR`更改設定為「`FLOW_DIR='./flows_mnist_gpu_1'`」。
+#### 2.1.2-b 建立「MNIST_gpu_1」排程
+此步驟跟2.1.2-a在相同的路徑下執行，但因為這兩個步驟是要建立不同排程，因此要上傳不同的`flows`資料夾。建立Docker Compose之前請先到`flow_scheduler/flow_scheduler/.env`裡面的`FLOW_DIR`更改設定為「`FLOW_DIR='./flows_mnist_gpu_1'`」。
 
 ````commmandline
 cd flow_scheduler/flow_scheduler/
@@ -44,7 +44,7 @@ docker compose up -d --build
 ````
 
 ## 2.2 分別建立兩個Prefect Agent
-建立Agent的詳細說明請見範例0。
+建立Agent的詳細說明請見[0-Quick-install](https://)。
 
 ### 2.2.1 建立「gpu_pool_0」
 
@@ -77,7 +77,7 @@ Flow Run隨即開始執行：
 
 ## 3 補充
 ### 如何確認不同Pool所使用的GPU代號
-可以只執行一個Pool，透過`nvidia-smi`觀察該Pool所使用的GPU，是否與執行另一個Pool時有所不同。例如在此範例中，只執行`gpu_pool_0`的Pool，就會指使用到GPU 0的資源。
+可以只執行一個Pool，透過`nvidia-smi`觀察該Pool所使用的GPU，是否與執行另一個Pool時有所不同。例如在此範例中，只執行`gpu_pool_0`的Pool，就會只使用到GPU 0的資源。
 
 > 使用「`watch`」工具定期執行`nvidia-smi`，就能隨時監控顯示卡運作情形。但由於該工具不會自動更新，我們可以在終端機輸入「`watch nvidia-smi`」，定期更新輸出資訊，例如下圖：
 ![img](./png/watch_nvidia-smi.png)
