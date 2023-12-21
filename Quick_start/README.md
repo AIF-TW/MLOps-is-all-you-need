@@ -2,12 +2,12 @@
 
 # 開發實驗階段
 
-- 請先完成快速安裝
-- 此為開發實驗階段主要跟大家分享如何將過程紀錄在MLflow中，並將每次的實驗紀錄(模型參數, Loss曲線, 評估指標…等)儲存起來，方便之後多實驗結果比較。
+- 請先完成[快速安裝](https://)
+- 此為開發實驗階段，主要跟大家分享如何將過程紀錄在MLflow中，並將每次的實驗紀錄(模型參數, Loss曲線, 評估指標…等)儲存起來，方便之後多實驗結果比較。
 
 ## 功能介紹
 
-- 紀錄模型超參數及訓練結果、並將模型存到 Minio裡面
+- 紀錄模型超參數及訓練結果、並將模型存到 MinIO 裡面
     ```python
     # 套件宣告
     import pandas as pd
@@ -21,7 +21,7 @@
     from datetime import datetime
     import gdown
     ```
-    1. 使用 Gdown 獲取資料
+    1. 使用 gdown 獲取資料
         ```python
         # 資料下載 url
         url = "https://drive.google.com/file/d/13_yil-3-ihA_px4nFdWq8KVoQWxxffHm/view?usp=sharing"
@@ -43,7 +43,7 @@
 
         # 將連續變項歸一化(MinMaxScaler): 將數值壓縮到0~1之間
         scaler = MinMaxScaler()
-        X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
+        X_train = scaler.fit_transform(X_train)
 
         ```
         
@@ -60,7 +60,7 @@
         # 訓練模型
         model_svc.fit(X_train, y_train)
         
-        model_xgb.fit(X_train, y_trainㄎ)
+        model_xgb.fit(X_train, y_train)
         ```
         
     4. 評估指標
@@ -141,7 +141,7 @@
 
 # 佈署階段
 
-- 請先完成快速安裝與開發實驗階段
+- 請先完成[快速安裝](https://)與[開發實驗階段](https://)
 - 此部署階段主要跟大家分享如何將訓練好的模型進行部署，一般來說會有兩道手續：
     1. 從眾多實驗中找出要將哪個模型進行部署，需要對該模型進行"註冊"(Register)
     2. 使用註冊後的進行部署，並實際進行資料推論

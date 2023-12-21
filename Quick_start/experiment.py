@@ -36,7 +36,7 @@ def main():
 
     # 將連續變項歸一化(MinMaxScaler): 將數值壓縮到0~1之間
     scaler = MinMaxScaler()
-    X_train[numerical_features] = scaler.fit_transform(X_train[numerical_features])
+    X_train = scaler.fit_transform(X_train)
     
     # 建立模型
     model_svc = SVC(C=1.0,        # Regularization parameter
