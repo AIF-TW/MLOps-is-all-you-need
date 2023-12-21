@@ -1,5 +1,5 @@
 # 快速安裝 - 單機 + CPU 排程執行服務
-此章節旨在說明如何快速安裝 MLOps 服務在本地電腦，並試運行各個相關服務/功能。其中， `工作流程的執行服務` 為 CPU 版本，如需 GPU 版本請參考其他章節。更多客製化安裝、套件功能介紹，請參考 `User Guide` 章節。<br>
+此章節旨在說明如何快速安裝 MLOps 服務在本地電腦，並試運行各個相關服務/功能。其中， `工作流程的執行服務` 為 CPU 版本，如需 GPU 版本請參考其他章節。
 
 
 ## 系統架構
@@ -8,14 +8,16 @@
 
 ## 事前準備
 1. 請先安裝 `git` 套件 ([下載教學](https://git-scm.com/book/zh-tw/v2/%E9%96%8B%E5%A7%8B-Git-%E5%AE%89%E8%A3%9D%E6%95%99%E5%AD%B8)) 與 `docker` 套件 ([官網下載](https://www.docker.com/products/docker-desktop/))
-2. 下載此專案
-```
-git clone https://github.com/AIF-TW/MLOps-is-all-you-need.git
-```
+2. 開啟終端機，下載此專案
+    > 註：如果是 Windows作業系統，請在 Git Bash 執行 下方指令 (Git Bash 會在下載 Git 套件的時候一併下載，使用方式請參考 [如何在VScode 使用 git bash](https://code.visualstudio.com/docs/sourcecontrol/intro-to-git#_git-bash-on-windows))
+
+    ```
+    git clone https://github.com/AIF-TW/MLOps-is-all-you-need.git
+    ```
 3. 進入此專案資料夾
-```
-cd MLOps-is-all-you-need
-```
+    ```
+    cd MLOps-is-all-you-need
+    ```
 
 ## 檔案結構
 包含 4 個服務/功能
@@ -77,29 +79,28 @@ cd MLOps-is-all-you-need
    docker-compose up --build
    ```
 
-2. 完成後，可以看到包含以下紀錄，表示各項服務正常啟動
+2. 完成後，可以在終端機看到包含以下紀錄，表示各項服務正常啟動
 - MinIO (容器名：`minio_s3`)
     ```
     MinIO Object Storage Server
     Copyright: 2015-2023 MinIO, Inc.
-    License: GNU AGPLV3 <https://www.gnu.org/licenses/agpl-3.0.htmb
-    Verston: RELEASE. 2023-10-25T06-33-25Z (go1.21.3 Linux/arm64)
-
-    Status:         1 Online, o Offline.
-    S3-API:http://172.19.0.2:9000 http://127.0.0.19090
-    Console:http://172.19.0.2:9001http://127.0.0.1:9001
+    License: GNU AGPLv3 <https://www.gnu.org/licenses/agpl-3.0.html>
+    Version: RELEASE.2023-12-14T18-51-57Z (go1.21.5 linux/arm64)
+    Status:         1 Online, 0 Offline. 
+    S3-API:http://172.19.0.2:9000 http://127.0.0.1:9090
+    Console:http://172.19.0.2:9001 http://127.0.0.1:9001
 
     Documentation:https://min.io/docs/minto/linux/index.html
     Warning: The standard parity is set to 0. This can lead to data loss
-    ```
+        ```
 - MLflow (容器名：`mlflow_server`)
     ```
     [2023-11-01 05:43:49 +0000] [33] [INFO] Starting gunicorn 20.1.0
-    [2023-11-01 05:43:49 +0000] [33] [INFO]Listening at:http://0.0.0.0:5050(33)
+    [2023-11-01 05:43:49 +0000] [33] [INFO] Listening at:http://0.0.0.0:5050(33)
     [2023-11-01 05:43:49 +0000] [33] [INFO] Using worker: sync
-    [2023-11-01 05:43:49 +0000] [34] [INF0]Booting worker with pid:34
+    [2023-11-01 05:43:49 +0000] [34] [INFO] Booting worker with pid:34
     [2023-11-01 05:43:49 +0000] [35] [INFO] Booting worker with pid:35
-    [2023-11-01 05:43:49 +0000] [36] [INF0] Booting worker withpid:36
+    [2023-11-01 05:43:49 +0000] [36] [INFO] Booting worker with pid:36
     [2023-11-01 05:43:49 +0000] [37] [INFO] Booting worker with pid:37
     ```
 - Prefect (容器名：`prefect_server`)
@@ -141,7 +142,7 @@ cd MLOps-is-all-you-need
     2023-11-13 08:30:16.688 UTC [1] LOG:  database system is ready to accept connections
     ```
 
-3. 確保正常啟動後，可以透過在瀏覽器輸入對應的網址，開始使用以下 GUI 的服務
+1. 若有看到以上的成功訊息後，接著可以透過在瀏覽器輸入對應的網址，開始使用以下 GUI 的服務
 - MinIO (網址: `http://localhost:9001`)
 
 ![minio_s3_success_ui](png/minio_s3_success_ui.png)
@@ -154,9 +155,7 @@ cd MLOps-is-all-you-need
 
 
 ### 開發環境 ML Experimenter
-1. 將 `ml_experimenter` 中的檔案複製到你將要啟動的專案資料夾，並進入該資料夾進行專案初始化 (此範例示範直接以 `ml_experimenter` 作為專案資歷夾)
-
-    > 註：如果是 Windows作業系統，請在 Git Bash 執行 下方指令 (Git Bash 會在下載 Git 套件的時候一併下載，使用方式請參考 [如何在VScode 使用 git bash](https://code.visualstudio.com/docs/sourcecontrol/intro-to-git#_git-bash-on-windows))
+1. 將 `ml_experimenter` 中的檔案複製到你將要啟動的專案資料夾，並進入該資料夾進行專案初始化 (此範例示範直接以 `ml_experimenter` 作為專案資料夾)
 
     ```
     cd ml_experimenter
@@ -174,7 +173,7 @@ cd MLOps-is-all-you-need
 3. 可以在這個資料夾開始你的專案開發了！
 
 ### 工作流程的排程功能 Flow Scheduler
-此功能在快速安裝時，僅利用範例專案做測試。詳細使用方法請參考 `快速使用` 章節。
+此功能在快速安裝時，僅利用範例專案做測試。詳細使用方法請參考 [快速使用](https://google.com) 章節。
 
 1.  進入`工作流程的排程功能` 並啟動
 
@@ -202,7 +201,7 @@ cd MLOps-is-all-you-need
 ![flow_scheduler_success_ui](png/flow_scheduler_success_ui.png)
 
 ### 工作流程的執行服務 Flow Agent
-此服務在快速安裝時，僅利用範例專案做測試，測試後刪除。詳細使用方法請參考 `快速使用` 章節。
+此服務在快速安裝時，僅利用範例專案做測試，測試後刪除。詳細使用方法請參考 [快速使用](https://) 章節。
 
 1. 進入 `工作流程的執行服務` 的 cpu 範例服務資料夾，並啟動範例服務
     ```
@@ -223,9 +222,9 @@ cd MLOps-is-all-you-need
     Agent started! Looking for work from work pool 'cpu_pool'...
     ```
 
-3. 最後，刪除服務
-    - 先中止服務：在終端機輸入 `control + c`
-    - 刪除服務：在終端機輸入
-        ```
-        docker-compose down 
-        ```
+3. 最後，將服務刪除
+ - 先中止服務：在終端機輸入 `control + c`
+ - 刪除服務：在終端機輸入
+     ```
+     docker-compose down 
+     ```
