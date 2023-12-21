@@ -56,7 +56,7 @@
 * 環境變數`.env`：各項服務所需要的環境變數，也可透過Python的[dotenv](https://pypi.org/project/python-dotenv/)套件載入。
 
 ## 2 測試服務是否正常建立
-此範例需要用到「`quick-install`」建立的服務，建議先前往下列各服務的UI連結，確認是否正常運作：
+此範例需要用到 [0-Quick-install](https://) 建立的服務，建議先前往下列各服務的UI連結，確認是否正常運作：
 
 * MLflow UI: [`http://localhost:5050/`](http://localhost:5050/)
 * Prefect UI: [`http://localhost:4200/`](http://localhost:4200/)
@@ -74,7 +74,7 @@
 在MLOps循環中，資料的版本控制也是重要環節，一般來說開發者除了會用不同的模型、超參數來訓練不同版本的模型，也會使用不同資料（例如在某個版本可能增加一些新標注好的資料）來進行訓練，然而資料版本間的「差異」通常難以用簡單的幾個數值來作為代表。舉例來說，對於結構化資料，資料的差異可能是新增或移除了某幾列；而對非結構化資料來說，可能是新增或移除了某些檔案，有鑑於此，我們需要類似git的版本控制工具，就像是管理程式碼一樣來管理資料。[Data Version Control (DVC)](https://dvc.org)是著名的開源資料版控工具，提供了命令列介面（Command-line interface）來進行操作，它的特色是操作邏輯與git非常類似，學習成本低，因此在範例中我們選擇DVC作為資料版本控制的工具。
 
 #### 3.1.1 安裝DVC以及基本設定
-# 製作第一版本的資料
+
 首先我們在本機端建立第一個版本的資料集，依照以下指令即可完成建立。
 ````commandline
 cd flow_scheduler/flows_mnist/data/
@@ -87,14 +87,14 @@ git commit -m "First version of training data."  # 以git對.dvc進行版控，�
 git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版本時比較方便
 ````
 
-#### 3.1.2 將訓練資料推送至上游以及從上游下載
-之後就能將完整的訓練資料推送至上游（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至上游的儲存空間，需留意空間使用量。
+#### 3.1.2 將訓練資料推送至 remote 以及從 remote 下載
+之後就能將完整的訓練資料推送至 remote（DVC支援常見的儲存空間，如Google Storage與S3），對產生的`.dvc`檔進行版控。要注意的是，由於`dvc push`會將完整的訓練資料推送至 remote 的儲存空間，需留意空間使用量。
 
 **注意事項：**
 步驟3.1.2至3.1.3也可以透過執行「[`data_version.sh`](./flow_scheduler/flows_mnist/data/data_version.sh)」一次完成。
 
 ````commandline
-dvc remote add remote s3://dvc/  # dvc add 後面接的「remote」是自定義的上游名稱
+dvc remote add remote s3://dvc/  # dvc add 後面接的「remote」是自定義的名稱
 dvc remote modify remote endpointurl http://localhost:9000
 export AWS_ACCESS_KEY_ID=admin
 export AWS_SECRET_ACCESS_KEY=adminsecretkey
@@ -102,7 +102,7 @@ dvc push -r remote  # 把這次的更動推送上到名為remote的遠端上
 
 # ls MNIST/train/0 | wc -l  # 可以透過確認數字0的資料數量來確認版本
 ````
-未來要下載上游的資料（例如在新的電腦或容器上），先下載`MNIST.dvc`，再執行以下程式碼：
+若未來要下載資料（例如在新的電腦或容器上），先下載`MNIST.dvc`，再執行以下程式碼：
 ````commandline
 export AWS_ACCESS_KEY_ID=admin
 export AWS_SECRET_ACCESS_KEY=adminsecretkey
@@ -112,9 +112,11 @@ dvc pull --remote remote
 ````
 
 #### 3.1.3 模擬產生新版本的資料
-首先我們將`train_v2`的資料拷貝到對應的類別，例如`train_v2/0/`底下的所有資料都拷貝到`train/0/`，依此類推直到10個類別都完成，我們透過這個過程來模擬增加資料後，作為第二個版本的狀況。
-
 您可以透過執行「[`flow_scheduler/flows_mnist/data/expand_train_data.py`](./flow_scheduler/flows_mnist/data/expand_train_data.py)」來一次完成拷貝的步驟。
+```
+python3 flow_scheduler/flows_mnist/data/expand_train_data.py
+```
+透過上一段指令，已經增加資料量，接下來使用```DVC```做版本控制，製作第二個版本。
 
 ````commandline
 dvc add MNIST
@@ -184,7 +186,7 @@ flow_scheduler exited with code 0
 
 #### 3.3.2 建立Agent來執行排程
 排程建立之後，便等待著Agent來執行，我們可以把Agent想像成機器人，只要事先把排程告訴Agent，它就會依照排程指定的時間去Prefect伺服器下載`flows/`資料夾，並且執行我們指定的`py`檔（此範例為`flow.py`）。
-在專案中我們可根據需求來決定Agent要在哪一個裝置啟動，例如當任務是深度學習模型訓練，自然就可能選擇配備GPU的電腦來執行；如果是資料下載或前處理，則可能選擇配有較強CPU的電腦，此範例以CPU版本進行說明，若您使用配有CUDA資源的裝置，可改為GPU版本。Agent同樣是以容器來啟動：
+在專案中我們可根據需求來決定Agent要在哪一個裝置啟動，例如當任務是深度學習模型訓練，自然就可能選擇配備GPU的電腦來執行；如果是資料下載或前處理，則可能選擇配有較強CPU的電腦，此範例以CPU版本進行說明，若您使用配有CUDA資源的裝置，可改為GPU版本，可參考[4-GPU-agent](https://)。Agent同樣是以容器來啟動：
 ````commandline
 cd flow_agent/flow_agent_pool_ml_cpu/  # 若要啟動GPU版本的Agent，則將'flow_agent_pool_ml_cpu'改為'flow_agent_pool_ml_gpu'
 docker compose up --build
@@ -205,4 +207,4 @@ docker compose up --build
 * 補充：如果建立容器時在`docker compose up`加入`-d`，讓容器在背景執行，Docker便不會將輸出的資訊顯示在終端機，此時可以進到`flow_agent/`執行`docker compose logs`來查看容器執行時的輸出資訊。
 
 **注意事項：**
-須先完成3.4.1步驟建立排程，才可執行3.4.2步驟來執行。
+須先完成3.3.1步驟建立排程，才可執行3.3.2步驟來執行。
