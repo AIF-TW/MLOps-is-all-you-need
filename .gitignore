@@ -34,3 +34,5 @@ demo_create_first_version_dvc.sh
 zip_version_ctrl_file.sh
 cat_dog_model.pt
 flow_scheduler/flows/data/dogs-vs-cats.zip
+
+MNIST/
