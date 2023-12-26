@@ -1,3 +1,5 @@
+本專案提供wiki頁面查詢，歡迎移至[wiki頁面](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/home)方便觀看。
+
 # 簡介
 此專案由AIF([財團法人人工智慧科技基金會](https://aif.tw/))維護製作，希望透過結合市面上各個優秀的MLOps開源軟體的優點，讓使用者可以更快速親民的接觸MLOps的世界。
 
