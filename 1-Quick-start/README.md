@@ -2,7 +2,7 @@
 
 # 開發實驗階段
 
-- 請先完成[0-Quick-install](https://)
+- 請先完成[0-Quick-install](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/0%E2%80%90Quick%E2%80%90install)
 - 此為開發實驗階段，主要跟大家分享如何將過程紀錄在MLflow中，並將每次的實驗紀錄(模型參數, Loss曲線, 評估指標…等)儲存起來，方便之後多實驗結果比較。
 
 ## 功能介紹
@@ -141,7 +141,7 @@
 
 # 佈署階段
 
-- 請先完成[0-Quick-install](https://)與[開發實驗階段](https://)
+- 請先完成[0-Quick-install](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/0%E2%80%90Quick%E2%80%90install)與[開發實驗階段](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/1%E2%80%90Quick%E2%80%90start#%E9%96%8B%E7%99%BC%E5%AF%A6%E9%A9%97%E9%9A%8E%E6%AE%B5)
 - 此部署階段主要跟大家分享如何將訓練好的模型進行部署，一般來說會有兩道手續：
     1. 從眾多實驗中找出要將哪個模型進行部署，需要對該模型進行"註冊"(Register)
     2. 使用註冊後的進行部署，並實際進行資料推論

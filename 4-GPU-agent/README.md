@@ -44,7 +44,7 @@ docker compose up -d --build
 ````
 
 ## 2.2 分別建立兩個Prefect Agent
-建立Agent的詳細說明請見[0-Quick-install](https://)。
+建立Agent的詳細說明請見[0-Quick-install](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/0%E2%80%90Quick%E2%80%90install)。
 
 ### 2.2.1 建立「gpu_pool_0」
 

@@ -173,7 +173,7 @@
 3. 可以在這個資料夾開始你的專案開發了！
 
 ### 工作流程的排程功能 Flow Scheduler
-此功能在快速安裝時，僅利用範例專案做測試。詳細使用方法請參考 [快速使用](https://google.com) 章節。
+此功能在快速安裝時，僅利用範例專案做測試。詳細使用方法請參考 [1-Quick-start](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/1%E2%80%90Quick%E2%80%90start) 章節。
 
 1.  進入`工作流程的排程功能` 並啟動
 
@@ -201,7 +201,7 @@
 ![flow_scheduler_success_ui](png/flow_scheduler_success_ui.png)
 
 ### 工作流程的執行服務 Flow Agent
-此服務在快速安裝時，僅利用範例專案做測試，測試後刪除。詳細使用方法請參考 [快速使用](https://) 章節。
+此服務在快速安裝時，僅利用範例專案做測試，測試後刪除。詳細使用方法請參考 [1-Quick-start](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/1%E2%80%90Quick%E2%80%90start) 章節。
 
 1. 進入 `工作流程的執行服務` 的 cpu 範例服務資料夾，並啟動範例服務
     ```
