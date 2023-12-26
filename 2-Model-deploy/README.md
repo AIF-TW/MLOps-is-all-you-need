@@ -1,6 +1,4 @@
-# Case B
-
-# Case B 模型部署案例分享
+# 模型部署案例分享
 
 - 請先完成[0-Quick-install](https://)
 - 此案例基於[1-Quick-start](https://) ，主要介紹如何將訓練結果、資料前處理方式與模型上傳至 MLflow 進行紀錄，並在部署階段下載並使用。
@@ -105,4 +103,4 @@
             
 
 # 佈署階段
-    流程皆與 Quick Start 相同
+    流程皆與 [0-Quick-start](https://) 相同

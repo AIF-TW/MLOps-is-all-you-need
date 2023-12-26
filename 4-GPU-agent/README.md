@@ -1,4 +1,4 @@
-# 案例D-建立多GPU實驗環境
+# 建立多GPU實驗環境
 
 ## 1 範例介紹
 多人團隊進行協作時，如果有多個GPU的裝置，就能善用每一個GPU作為一個Agent來同時執行多個排程。在此範例中我們將建立適合多人使用的[Prefect Work pools](https://docs.prefect.io/2.14.3/concepts/work-pools/)，模擬當手上有多GPU，又有多個排程要進行時可以怎麼使用Prefect。
