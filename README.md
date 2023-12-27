@@ -35,3 +35,6 @@
   建立多GPU實驗環境
 
 - [5-Multi-computers-quick-install](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/5%E2%80%90Multi%E2%80%90computers%E2%80%90quick%E2%80%90install)
+
+  建立多台電腦/伺服器的環境
+
