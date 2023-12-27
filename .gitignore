@@ -3,7 +3,6 @@ __pycache__/
 .DS_Store
 mlruns/
 *.csv
-*.env
 .ipynb_checkpoints
 
 
