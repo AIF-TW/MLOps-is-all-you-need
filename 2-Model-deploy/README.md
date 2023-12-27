@@ -103,4 +103,4 @@
             
 
 # 佈署階段
-    - 流程皆與 [1-Quick-start](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/1%E2%80%90Quick%E2%80%90start) 相同
+- 流程皆與[1-Quick-start](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/1%E2%80%90Quick%E2%80%90start)相同
