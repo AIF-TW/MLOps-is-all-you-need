@@ -6,7 +6,7 @@ services:
     image: ml_experimenter
     container_name: ml_experimenter
     ports:
-      - 8888:8888
+      - 8890:8888
     volumes:
       - ./notebooks:/home
       - ../flow_scheduler/flows_mnist/data:/home/user/mnist_example/data
