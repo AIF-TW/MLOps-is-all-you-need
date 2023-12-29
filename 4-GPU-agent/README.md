@@ -10,10 +10,10 @@
 ## 2 實作
 **注意事項：**
 1. 此範例需要用到[0-Quick-Install](../0-Quick-Install/)所建立的服務
-2. 如果是單GPU設備，則只需要執行`gpu_0`結尾的步驟就好
+2. 如果是單GPU設備，則只需要執行GPU 0的步驟就好（例如建立「MNIST_gpu_0」排程）
 3. 確認[CUDA](https://www.nvidia.com/zh-tw/geforce/technologies/cuda/)是否已設定好<details><summary>確認方式：</summary>
 
-    首先開啟[NVIDIA System Management Interface](https://developer.nvidia.com/nvidia-system-management-interface)來確認顯示卡以及，假如能看到所有已裝備的GPU以及CUDA版本，如下圖，就代表所需的驅動都已裝好。如果未能看到設備安裝的GPU，可能是因為沒有正確安裝驅動程式。
+    在終端機輸入`nvidia-smi`來開啟[NVIDIA System Management Interface](https://developer.nvidia.com/nvidia-system-management-interface)，假如能看到所有已裝備的GPU以及CUDA版本，如下圖，就代表所需的驅動都已裝好。如果未能看到設備安裝的GPU，可能是因為沒有正確安裝驅動程式。
     ![img](./png/nvidia-smi.png)
 
     </details>
@@ -25,7 +25,7 @@
 
 ### 2.1.2 分別建立兩個排程
 #### 2.1.2-a 建立「MNIST_gpu_0」排程
-如果是在單GPU設備，就不需要執行2.1.2-b。建立Docker Compose之前請確認`flow_scheduler/flow_scheduler/.env`裡面的`FLOW_DIR`設定為「`FLOW_DIR='./flows_mnist_gpu_0'`」：
+建立Docker Compose之前請確認`flow_scheduler/flow_scheduler/.env`裡面的`FLOW_DIR`設定為「`FLOW_DIR='./flows_mnist_gpu_0'`」：
 ````commmandline
 cd flow_scheduler/flow_scheduler/
 docker compose up -d --build
@@ -38,14 +38,26 @@ docker compose up -d --build
 ````
 
 ## 2.2 分別建立兩個Prefect Agent
-建立Agent的詳細說明請見[0-Quick-Install](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/0%E2%80%90Quick%E2%80%90install)。
-
 ### 2.2.1 建立「gpu_pool_0」
 如果是在單GPU設備，就不需要執行2.2.2。
 ````commmandline
 cd flow_agent_pool_ml_gpu_0/
 docker compose up -d --build
 ````
+
+<details><summary>在Docker Compose指派GPU的方式</summary>
+
+以[`flow_agent_pool_ml_gpu_0/docker-compose.yml`](./flow_agent/flow_agent_pool_ml_gpu_0/docker-compose.yml)為範例，只要在`deploy.resources.reservations`指定`device_ids`，就能以該代號的GPU執行這個Pool的任務，例如：
+````yaml
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]  # <-- 使用id = 0的GPU
+              capabilities: [gpu]
+````
+</details>
 
 ### 2.2.2 建立「gpu_pool_1」
 ````commmandline
@@ -67,17 +79,3 @@ Flow Run隨即開始執行：
 ![img](./png/Prefect_flow_run.png)
 
 到目前為止我們已經實際操作完CPU與GPU Agent的建立，並用來進行模型訓練，未來就能依設備與需求，自行組合出最適合團隊使用的Prefect pool。
-
-## 3 補充
-### 在Docker Compose指定使用某個GPU的方式
-以[`flow_agent_pool_ml_gpu_0/docker-compose.yml`](./flow_agent/flow_agent_pool_ml_gpu_0/docker-compose.yml)為範例，只要在`deploy.resources.reservations`項目指定`device_ids`，就能以該代號的GPU來執行這個Pool，例如：
-````yaml
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: ["0"]  # <-- 使用id = 0的GPU
-              capabilities: [gpu]
-````
-就能使用代號0的GPU。
