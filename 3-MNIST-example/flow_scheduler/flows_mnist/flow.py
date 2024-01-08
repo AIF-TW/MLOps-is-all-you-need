@@ -208,8 +208,18 @@ def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs
 
 @flow(name=f'MNIST', log_prints=True)
 def main():
-    with open('flow.yaml', 'r') as f:
-        cfg = yaml.safe_load(f)
+    cfg = {}
+    # 排程相關設定
+    with open('config/flow.yml', 'r') as f:
+        cfg['flow'] = yaml.safe_load(f)
+    
+    # 超參數相關設定
+    with open('config/hyp.yml', 'r') as f:
+        cfg['hyp'] = yaml.safe_load(f)
+
+    # 資料集相關設定
+    with open('config/dataset.yml', 'r') as f:
+        cfg['dataset'] = yaml.safe_load(f)
 
     # 設定環境變數
     # 這邊很重要，如果程式沒有正確讀取這些環境變數，可能會造成MLflow無法追蹤實驗，或無法執行
@@ -217,27 +227,27 @@ def main():
     os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('MINIO_ROOT_PASSWORD')
     os.environ["MLFLOW_S3_ENDPOINT_URL"] = os.getenv('MLFLOW_S3_ENDPOINT_URL')
     os.environ["MLFLOW_TRACKING_URI"] = os.getenv('MLFLOW_TRACKING_URI')
-    os.environ["LOGNAME"] = cfg['developer_name']  # 設定要紀錄在實驗的使用者名稱
+    os.environ["LOGNAME"] = cfg['flow']['developer_name']  # 設定要紀錄在實驗的使用者名稱
 
     # 設定MLflow用來儲存實驗結果的路徑
-    # mlflow.set_tracking_uri(os.getenv('MLFLOW_SERVER'))
+    mlflow.set_tracking_uri(os.getenv('MLFLOW_SERVER'))
     print(f"MLflow server: {mlflow.get_tracking_uri()}")
 
     # 設定實驗名稱，如果該實驗不存在則建立
-    if not mlflow.get_experiment_by_name(cfg['experiment_name']):  # 確認'experiment_name'為名的實驗存在與否
-        mlflow.create_experiment(cfg['experiment_name'], f"s3://{os.getenv('MLFLOW_BUCKET_NAME')}/")
-    mlflow.set_experiment(cfg['experiment_name'])
+    if not mlflow.get_experiment_by_name(cfg['flow']['experiment_name']):  # 確認'experiment_name'為名的實驗存在與否
+        mlflow.create_experiment(cfg['flow']['experiment_name'], f"s3://{os.getenv('MLFLOW_BUCKET_NAME')}/")
+    mlflow.set_experiment(cfg['flow']['experiment_name'])
 
     # 從DVC remote下載資料
-    data_version = fetch_dataset(cfg['dvc_remote'])
+    data_version = fetch_dataset(cfg['dataset']['dvc_remote'])
 
     # 資料前處理
     train_loader, val_loader = preprocessing(
-        root=cfg['train_data_path'],
-        shuffle_data=cfg['hyperparameter']['shuffle_data'],
-        batch_size=cfg['hyperparameter']['batch_size'],
-        random_seed=cfg['hyperparameter']['random_seed'],
-        val_size=cfg['hyperparameter']['val_size']
+        root=cfg['dataset']['train_data_path'],
+        shuffle_data=cfg['hyp']['hyperparameter']['shuffle_data'],
+        batch_size=cfg['hyp']['hyperparameter']['batch_size'],
+        random_seed=cfg['hyp']['hyperparameter']['random_seed'],
+        val_size=cfg['hyp']['hyperparameter']['val_size']
     )
 
     # 模型訓練
@@ -246,8 +256,8 @@ def main():
         val_loader=val_loader,
         model=Net(),
         data_version=data_version,
-        n_epochs=cfg['hyperparameter']['n_epochs'],
-        learning_rate=cfg['hyperparameter']['learning_rate'],
+        n_epochs=cfg['hyp']['hyperparameter']['n_epochs'],
+        learning_rate=cfg['hyp']['hyperparameter']['learning_rate'],
         device_name='cuda' if torch.cuda.is_available() else 'cpu'
     )
 

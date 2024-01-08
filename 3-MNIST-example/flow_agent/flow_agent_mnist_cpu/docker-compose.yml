@@ -1,7 +1,5 @@
 version: '3.8'
 
-name: flow_agent_${POOL_NAME}_${QUEUE_NAME}
-
 services:
 
   flow_agent:
