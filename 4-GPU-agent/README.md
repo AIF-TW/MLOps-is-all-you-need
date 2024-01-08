@@ -1,13 +1,7 @@
 # 建立多GPU實驗環境
-
-## 1 範例介紹
 多人團隊進行協作時，如果有多個GPU的裝置，就能善用每一個GPU作為一個Agent來執行多個排程。在此範例中我們將建立適合多人使用的[Prefect Work pools](https://docs.prefect.io/2.14.3/concepts/work-pools/)，模擬當設備有雙GPU，又有2個排程要進行時可以怎麼使用Prefect。
 
-主要步驟有：
-1. 建立Prefect GPU Agent
-2. 建立多個排程，並上傳到不同的GPU Agent
-
-## 2 實作
+## 實作
 **注意事項：**
 1. 此範例需要用到[0-Quick-Install](../0-Quick-Install/)所建立的服務
 2. 如果是單GPU設備，則只需要執行GPU 0的步驟就好（例如建立「MNIST_gpu_0」排程）
@@ -18,28 +12,28 @@
 
     </details>
 
-## 2.1 透過Prefect建立2個排程
+## 1 透過Prefect建立2個排程
 將「MNIST_gpu_0」、「MNIST_gpu_1」排程分別上傳到Prefect伺服器上：
-### 2.1.1 複製`MNIST.dvc`到工作資料夾
+### 1.1 複製`MNIST.dvc`到工作資料夾
 將`flows_mnist/data/MNIST.dvc`分別拷貝到`flow_scheduler/flows_mnist_gpu_0/data/`、`flow_scheduler/flows_mnist_gpu_1/data/`。兩個資料夾都要有`MNIST.dvc`才能從DVC remote下載資料。
 
-### 2.1.2 分別建立兩個排程
-#### 2.1.2-a 建立「MNIST_gpu_0」排程
+### 1.2 分別建立兩個排程
+#### 1.2-a 建立「MNIST_gpu_0」排程
 建立Docker Compose之前請確認`flow_scheduler/flow_scheduler/.env`裡面的`FLOW_DIR`設定為「`FLOW_DIR='./flows_mnist_gpu_0'`」：
 ````commmandline
 cd flow_scheduler/flow_scheduler/
 docker compose up -d --build
 ````
 
-#### 2.1.2-b 建立「MNIST_gpu_1」排程
+#### 1.2-b 建立「MNIST_gpu_1」排程
 此步驟跟2.1.2-a在相同的路徑下執行，但因為這兩個步驟是要建立不同排程，因此要上傳不同的`flows`資料夾。建立Docker Compose之前請先到`flow_scheduler/flow_scheduler/.env`裡面的`FLOW_DIR`更改設定為「`FLOW_DIR='./flows_mnist_gpu_1'`」：
 ````commmandline
 docker compose up -d --build
 ````
 
-## 2.2 分別建立兩個Prefect Agent
-### 2.2.1 建立「gpu_pool_0」
-如果是在單GPU設備，就不需要執行2.2.2。
+## 2 分別建立兩個Prefect Agent
+### 2.1 建立「gpu_pool_0」
+如果是在單GPU設備，就不需要執行2.2。
 ````commmandline
 cd flow_agent_pool_ml_gpu_0/
 docker compose up -d --build
@@ -59,22 +53,22 @@ docker compose up -d --build
 ````
 </details>
 
-### 2.2.2 建立「gpu_pool_1」
+### 2.2 建立「gpu_pool_1」
 ````commmandline
 cd flow_agent_pool_ml_gpu_1/
 docker compose up -d --build
 ````
 
-## 2.3 確認排程是否建立成功
+## 3 確認排程是否建立成功
 前往[`http://localhost:4200/`](http://localhost:4200/)，確認剛才建立的排程是否有出現。
 
 ![img](./png/Prefect_flows.png)
 
-如果還沒到排程的時間，程式就不會開始執行，我們可以用以下方式來快速執行一次：
-1. 展開「MNIST_gpu_0」或「MNIST_gpu_1」，會看到「model_training_mnist_gpu_0」或「model_training_mnist_gpu_1」，以下截圖是展開「MNIST_gpu_1」的樣子
-2. 點一下該卡片的右上角的「 ⋮ 」按鈕，點一下「Quick run」即可快速執行一次
+> 如果還沒到排程的時間，程式就不會開始執行，我們可以用以下方式來快速執行一次：
+> 1. 展開「MNIST_gpu_0」或「MNIST_gpu_1」，會看到「model_training_mnist_gpu_0」或「model_training_mnist_gpu_1」，以下截圖是展開「MNIST_gpu_1」的樣子
+> 2. 點一下該卡片的右上角的「 ⋮ 」按鈕，點一下「Quick run」即可快速執行一次
+> ![img](./png/Prefect_quick_run.png)
 
-![img](./png/Prefect_quick_run.png)
 Flow Run隨即開始執行：
 ![img](./png/Prefect_flow_run.png)
 
