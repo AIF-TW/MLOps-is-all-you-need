@@ -1,0 +1,7 @@
+hyperparameter:  # 模型超參數
+  random_seed: 12
+  val_size: 0.2
+  shuffle_data: True
+  batch_size: 64
+  learning_rate: 0.001
+  n_epochs: 10

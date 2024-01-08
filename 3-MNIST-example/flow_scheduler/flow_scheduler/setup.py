@@ -2,7 +2,7 @@ import os
 import yaml
 
 # yaml to dict
-with open('flow.yaml') as f:
+with open('./config/flow.yml') as f:
     data = yaml.load(f, Loader=yaml.FullLoader)
 
 # scheduler 
