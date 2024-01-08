@@ -9,14 +9,14 @@
 
 
 ## 事前準備
-1. 請先安裝 `git` 套件 ([下載教學](https://git-scm.com/book/zh-tw/v2/%E9%96%8B%E5%A7%8B-Git-%E5%AE%89%E8%A3%9D%E6%95%99%E5%AD%B8)) 與 `docker` 套件 ([官網下載](https://www.docker.com/products/docker-desktop/))
+1. 請先安裝 `git` 套件 ([下載教學](https://git-scm.com/book/zh-tw/v2/%E9%96%8B%E5%A7%8B-Git-%E5%AE%89%E8%A3%9D%E6%95%99%E5%AD%B8)) 、 `docker` 套件 ([官網下載](https://www.docker.com/products/docker-desktop/)) 、 `conda` 套件 ([官網下載](https://conda.io/projects/conda/en/latest/user-guide/install/index.html#))
 2. 下載此專案到所有需要部署的電腦上
 ```
 git clone https://github.com/AIF-TW/MLOps-is-all-you-need.git
 ```
-3. 在所有需要部署的電腦中，進入此專案資料夾
+3. 在所有需要部署的電腦中，進入此快速安裝資資料夾
 ```
-cd MLOps-is-all-you-need
+cd MLOps-is-all-you-need/5-Multi-computers-quick-install
 ```
 
 ## 檔案結構
@@ -56,7 +56,6 @@ cd MLOps-is-all-you-need
 │           └── requirements.txt
 ├── ml_experimenter
 │   ├── .env
-│   ├── local-setup.sh
 │   └── requirements_sys.txt
 └── server
     ├── .env
@@ -107,7 +106,7 @@ cd MLOps-is-all-you-need
     </p>
     </details>
 
-2. 修改 `server` 資料夾中的 `.env` 檔，將上一步得到的 `SERVER_IP` 取代 `<YOUR_SERVER_IP>`。
+2. 修改 `server` 資料夾中的 `.env` 檔，將上一步得到的 `SERVER_IP` 取代 `YOUR_SERVER_IP`。
 
 3. 進入到  `server` 資料夾，並啟動伺服器服務
    ```
@@ -180,47 +179,81 @@ cd MLOps-is-all-you-need
     ```
 
 5. 確保正常啟動後，可以透過在瀏覽器輸入對應的網址，開始使用以下 GUI 的服務
-- MinIO (網址: `http://localhost:9001`)
+    > 註：請將 `SERVER_IP` 替換成步驟一取得的 `預設電腦IP`
+- MinIO (網址: `http://SERVER_IP:9001`，帳號：`admin`，密碼：`adminsecretkey`)
 
 ![minio_s3_success_ui](png/minio_s3_success_ui.png)
-- MLflow (網址: `http://localhost:5050`)
+- MLflow (網址: `http://SERVER_IP:5050`)
 
 ![mlflow_server_success_ui](png/mlflow_server_success_ui.png)
-- Prefect (網址: `http://localhost:4200`)
+- Prefect (網址: `http://SERVER_IP:4200`)
 
 ![prefect_server_success_ui](png/prefect_server_success_ui.png)
 
 
 ### 開發環境 ML Experimenter
 > 請在 `電腦2` 執行此段落
+> 註：如果是 Windows作業系統，請在 Git Bash 執行 下方指令 (Git Bash 會在下載 Git 套件的時候一併下載，使用方式請參考 [如何在VScode 使用 git bash](https://code.visualstudio.com/docs/sourcecontrol/intro-to-git#_git-bash-on-windows))
 
-1. 修改 `ml_experimenter` 資料夾中的 `.env` 檔，用 `伺服器` 段落取得的 `SERVER_IP` 取代 `<YOUR_SERVER_IP>`。
-
-2. 將 `ml_experimenter` 中的檔案複製到你將要啟動的專案資料夾，並進入該資料夾進行專案初始化 (此範例示範直接以 `ml_experimenter` 作為專案資歷夾)
-
-    > 註：如果是 Windows作業系統，請在 Git Bash 執行 下方指令 (Git Bash 會在下載 Git 套件的時候一併下載，使用方式請參考 [如何在VScode 使用 git bash](https://code.visualstudio.com/docs/sourcecontrol/intro-to-git#_git-bash-on-windows))
-
+1. 修改 `ml_experimenter` 資料夾中的 `.env` 檔，用 `伺服器` 段落取得的 `SERVER_IP` 取代 `<OUR_SERVER_IP`。
+2. 利用 conda 建立一個獨立開發環境 `mlops`，並進入該環境
+    ```
+    conad create -n mlops python=3.10 -y    # 建立獨立開發環境
+    conda activate mlops                    # 進入該開發環境
+    ```
+3. 將 `ml_experimenter` 中的檔案複製到你的開發專案資料夾，並進入該資料夾準備進行專案初始化 (此範例示範直接以 `ml_experimenter` 作為開發專案資料夾)
     ```
     cd ml_experimenter
-    source local-setup.sh
+    ```
+4. 利用 conda 建立一個獨立開發環境 `mlops`，並進入該環境
+    ```
+    conad create -n mlops python=3.10 -y    # 建立獨立開發環境
+    conda activate mlops                    # 進入該開發環境
+    ```
+5. 下載需要的 python 套件
+    > 註：每個新的獨立環境都要重新下載一次
+    ```
+    pip install -r requirements_sys.txt
+    ```
+6. 設定環境變數
+    > 註：每次使用新的終端機介面都需要重新設定環境變數。
+    ```
+    source .env
+    ```
+7. [可選擇] 初始化 DVC 資料版本控制服務 
+    ```
+    git init
+    dvc init
+    dvc remote add -f minio_s3 ${MINIO_S3_PROJECT_BUCKET}
+    dvc remote modify minio_s3 endpointurl ${MLFLOW_S3_ENDPOINT_URL}
+    ```
+    完成後，可以在終端機看到以下結果，表示 DVC 初始化正常
+    ```
+    You can now commit the changes to git.
+
+    +---------------------------------------------------------------------+
+    |                                                                     |
+    |        DVC has enabled anonymous aggregate usage analytics.         |
+    |     Read the analytics documentation (and how to opt-out) here:     |
+    |             <https://dvc.org/doc/user-guide/analytics>              |
+    |                                                                     |
+    +---------------------------------------------------------------------+
+
+    What's next?
+    ------------
+    - Check out the documentation: <https://dvc.org/doc>
+    - Get help and share ideas: <https://dvc.org/chat>
+    - Star us on GitHub: <https://github.com/iterative/dvc>
     ```
 
-3. 完成後，可以在終端機看到以下結果，表示專案初始化正常
-    ```
-    ==========================
-    Done & Enjoy Your Project!
-    ==========================
-    Note. DVC remote strage name: minio_s3
-    ```
-
-4. 可以在這個資料夾開始你的專案開發了！
+8. 可以在這個資料夾開始你的專案開發了！
 
 ### 工作流程的排程功能 Flow Scheduler
 > 請在 `電腦3` 執行此段落
 
 此功能在快速安裝時，僅利用範例專案做測試。詳細使用方法請參考 `快速使用` 章節。
 
-1. 修改 `flow_scheduler/flow_scheduler` 資料夾中的 `.env` 檔，用 `伺服器` 段落取得的 `SERVER_IP` 取代 `<YOUR_SERVER_IP>`。
+1. 修改 `flow_scheduler/flow_scheduler` 資料夾中的 `.env` 檔，用 `伺服器` 段落取得的 `SERVER_IP` 取代 `YOUR_SERVER_IP`。
 
 2.  進入`工作流程的排程功能` 並啟動
 
@@ -252,7 +285,7 @@ cd MLOps-is-all-you-need
 
 此服務在快速安裝時，僅利用範例專案做測試，測試後刪除。詳細使用方法請參考 `快速使用` 章節。
 
-1. 修改 `flow_agent/default-agent-pool_ml_cpu` 資料夾中的 `.env` 檔，用 `伺服器` 段落取得的 `SERVER_IP` 取代 `<YOUR_SERVER_IP>`。
+1. 修改 `flow_agent/default-agent-pool_ml_cpu` 資料夾中的 `.env` 檔，用 `伺服器` 段落取得的 `SERVER_IP` 取代 `YOUR_SERVER_IP`。
 
 2. 進入 `工作流程的執行服務` 的 cpu 範例服務資料夾，並啟動範例服務
     ```
