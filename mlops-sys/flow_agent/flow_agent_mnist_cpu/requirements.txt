@@ -1,0 +1,9 @@
+# flow.py 會用到的相關套件 (除 mlflow==2.5.0 和 prefect==2.10.9 以外)
+dill
+numpy~=1.23.5
+python-dotenv~=0.21.0
+torchvision
+torch==2.0.*
+dvc
+dvc-s3
+pyyaml
