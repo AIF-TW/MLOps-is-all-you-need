@@ -7,6 +7,8 @@ services:
     image: flow_agent_${POOL_NAME}_${QUEUE_NAME}_cpu
     container_name: flow_agent_${POOL_NAME}_${QUEUE_NAME}_cpu
     command: prefect agent start --pool ${POOL_NAME} --work-queue ${QUEUE_NAME}
+    env_file:
+      - .env
     environment:
       # for MinIO
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}

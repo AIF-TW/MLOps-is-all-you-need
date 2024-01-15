@@ -210,22 +210,22 @@ def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs
 def main():
     cfg = {}
     # 排程相關設定
-    with open('config/flow.yml', 'r') as f:
+    with open('config/flow.yaml', 'r') as f:
         cfg['flow'] = yaml.safe_load(f)
     
     # 超參數相關設定
-    with open('config/hyp.yml', 'r') as f:
+    with open('config/hyp.yaml', 'r') as f:
         cfg['hyp'] = yaml.safe_load(f)
 
     # 資料集相關設定
-    with open('config/dataset.yml', 'r') as f:
+    with open('config/dataset.yaml', 'r') as f:
         cfg['dataset'] = yaml.safe_load(f)
 
     # 設定環境變數
     # 這邊很重要，如果程式沒有正確讀取這些環境變數，可能會造成MLflow無法追蹤實驗，或無法執行
     os.environ["AWS_ACCESS_KEY_ID"] = os.getenv('MINIO_ROOT_USER')
     os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('MINIO_ROOT_PASSWORD')
-    os.environ["MLFLOW_S3_ENDPOINT_URL"] = os.getenv('MLFLOW_S3_ENDPOINT_URL')
+    os.environ["MLFLOW_S3_ENDPOINT_URL"] = cfg['dataset']['dvc_s3_endpoint_url']
     os.environ["MLFLOW_TRACKING_URI"] = os.getenv('MLFLOW_TRACKING_URI')
     os.environ["LOGNAME"] = cfg['flow']['developer_name']  # 設定要紀錄在實驗的使用者名稱
 
