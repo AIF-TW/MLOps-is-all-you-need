@@ -144,6 +144,13 @@ dvc push -r minio_s3
 
 ### 3. 模型的定期再訓練
 #### 3.1. 製作自動化排程
+打開`MLOps-is-all-you-need/mlops-sys/flow_scheduler/.env.local`，更改以下設定：
+```shell
+# FLOW_DIR = '../../flows/example_flow' # project directory of your flow.py
+改為
+FLOW_DIR = '../../flows/flow-mnist' # project directory of your flow.py
+```
+
 執行以下指令將排程資料上傳到Prefect伺服器：
 ````shell
 cd MLOps-is-all-you-need/mlops-sys/flow_scheduler/
@@ -152,19 +159,19 @@ docker compose -f docker-compose-local.yml --env-file ./.env.local up --build
 
 這個步驟的目的是將工作資料夾（就是`flow-mnist`）上傳到Prefect伺服器，並且製作排程。當容器成功建立，會看到包含以下文字的訊息：
 ````
-✔ Container flow_scheduler  Created
+ ✔ Container flow_scheduler
 Attaching to flow_scheduler
-flow_scheduler  | Created work pool 'cpu_pool'.
+flow_scheduler  | Created work pool 'mnist-cpu'.
 flow_scheduler  | Found flow 'MNIST'
 flow_scheduler  | Deployment YAML created at '/root/flows/main-deployment.yaml'.
 flow_scheduler  | Successfully uploaded 53 files to s3://prefect/main/model_training
 flow_scheduler  | Deployment 'MNIST/model_training' successfully created with id 
-flow_scheduler  | '44bf4823-0335-4275-808d-a3659b7f1b1a'.  # 在你的環境執行時，此id可能會與範例不同
+flow_scheduler  | '67d9ff64-66a7-4567-8075-531326d671d9'.  # 這個id可能隨著在不同環境執行而有所不同
 flow_scheduler  | 
 flow_scheduler  | To execute flow runs from this deployment, start an agent that pulls work from 
-flow_scheduler  | the 'cpu_pool' work pool:
+flow_scheduler  | the 'mnist-cpu' work pool:
 flow_scheduler  | 
-flow_scheduler  | $ prefect agent start -p 'cpu_pool'
+flow_scheduler  | $ prefect agent start -p 'mnist-cpu'
 flow_scheduler exited with code 0
 ````
 > 訊息顯示排程已上傳至Prefect伺服器，正等待Prefect Agent來執行這個排程，接下來就要啟動另一個容器來建立Prefect Agent。

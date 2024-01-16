@@ -223,8 +223,8 @@ def main():
 
     # 設定環境變數
     # 這邊很重要，如果程式沒有正確讀取這些環境變數，可能會造成MLflow無法追蹤實驗，或無法執行
-    os.environ["AWS_ACCESS_KEY_ID"] = os.getenv('MINIO_ROOT_USER')
-    os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('MINIO_ROOT_PASSWORD')
+    os.environ["AWS_ACCESS_KEY_ID"] = os.getenv('AWS_ACCESS_KEY_ID')
+    os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('AWS_SECRET_ACCESS_KEY')
     os.environ["MLFLOW_S3_ENDPOINT_URL"] = cfg['dataset']['dvc_s3_endpoint_url']
     os.environ["MLFLOW_TRACKING_URI"] = os.getenv('MLFLOW_TRACKING_URI')
     os.environ["LOGNAME"] = cfg['flow']['developer_name']  # 設定要紀錄在實驗的使用者名稱
