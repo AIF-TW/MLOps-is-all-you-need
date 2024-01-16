@@ -210,15 +210,15 @@ def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs
 def main():
     cfg = {}
     # 排程相關設定
-    with open('config/flow.yaml', 'r') as f:
+    with open('config/flow.yml', 'r') as f:
         cfg['flow'] = yaml.safe_load(f)
     
     # 超參數相關設定
-    with open('config/hyp.yaml', 'r') as f:
+    with open('config/hyp.yml', 'r') as f:
         cfg['hyp'] = yaml.safe_load(f)
 
     # 資料集相關設定
-    with open('config/dataset.yaml', 'r') as f:
+    with open('config/dataset.yml', 'r') as f:
         cfg['dataset'] = yaml.safe_load(f)
 
     # 設定環境變數

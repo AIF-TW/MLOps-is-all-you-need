@@ -1,4 +1,4 @@
-# 以手寫數字資料集實作系統建置與執行實驗
+# 以MNIST實作系統建置與執行實驗
 這份範例是透過手寫數字辨識模型的開發，實際操作以下步驟：
 - 進行資料版本控制
 - 在模型實驗階段，訓練模型並追蹤模型結果
@@ -21,10 +21,12 @@
 * [Data Version Control (DVC)](https://dvc.org)：DVC是著名的開源資料版本控制工具，操作邏輯與[Git](https://git-scm.com)類似，可支援S3、Google Drive以及其他常見的雲端服務。
 
 ## 環境需求
-需要確認以下服務正常運作：
+1. 需要確認以下服務正常運作：
 * MinIO
 * Prefect
 * MLflow
+
+2. 此範例的所有步驟都需要在[快速安裝](/wiki/0-quick-install/README.md)建立的環境`mlops`操作。
 
 ## 工作資料夾結構
 ```
@@ -45,8 +47,8 @@ flow-mnist
   - `flow.yaml`: 排程相關設定
   - `hyp.yaml`: 模型超參數設定
 * `data/`: 放置資料集與版本控制檔案
-  - `MNIST.zip`: 資料集
-  - `data_version.sh`: 進行資料版本控制
+  - `MNIST.zip`: MNIST資料集，解壓縮後會產生`train/`、`train_v2/`、`test/`等3個資料夾
+  - `data_version.sh`: 用來完成資料版本控制的Shell檔
 * `flow.py`: 要讓Prefect自動執行的Python檔
 * `mnist.ipynb`: 執行模型訓練的Jupyter Notebook
 * `requirements.txt`: 在本機端執行任務所需的套件
