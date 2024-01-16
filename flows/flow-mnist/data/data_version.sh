@@ -1,3 +1,7 @@
+set -a            
+source ../.env  # 設定環境變數
+set +a
+
 unzip MNIST.zip  # 解壓縮MNIST.zip，如果已經解壓縮過，這條可以註解掉
 
 # 製作v1.0的訓練資料，並讓DVC開始追蹤
@@ -16,7 +20,12 @@ dvc remote add -f minio_s3 s3://$DVC_BUCKET_NAME/$PROJECT_NAME/  # remote為自�
 dvc remote modify minio_s3 endpointurl $MLFLOW_S3_ENDPOINT_URL
 dvc push -r minio_s3  # 推送至minio_s3
 
-python3 expand_train_data.py  # 將額外的訓練資料加入train裡面
+# 將更多訓練資料加入train/
+for ((digit=0; digit<=9; digit++))
+do
+    mv ./MNIST/train_v2/$digit/* ./MNIST/train/$digit/
+done
+rm -r ./MNIST/train_v2/
 
 # 製作v2.0的訓練資料
 dvc add MNIST
