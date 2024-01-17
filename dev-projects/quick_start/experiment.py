@@ -8,6 +8,12 @@ from datetime import datetime
 import gdown
 from dotenv import load_dotenv
 
+# 系統環境變數設定(單機版)
+load_dotenv("../../mlops-sys/ml_experimenter/.env.local")
+
+# 系統環境變數設定(多機版)
+# load_dotenv("../../mlops-sys/ml_experimenter/.env")
+
 def main():
 
     # 使用 Gdown 獲取資料
@@ -50,12 +56,6 @@ def main():
 
     y_pred = model_xgb.predict(X_train)
     accuracy_xgb = (y_pred == y_train).sum()/y_train.shape[0]
-    
-    # MLflow 環境設定
-    load_dotenv('/Users/shlongkuu/mlops/MLOps-is-all-you-need/mlops-sys/ml_experimenter/.env.local')
-    os.environ["AWS_ACCESS_KEY_ID"] = os.getenv('MINIO_ROOT_USER')
-    os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('MINIO_ROOT_PASSWORD')
-    os.environ["MLFLOW_S3_ENDPOINT_URL"] = os.getenv('MLFLOW_S3_ENDPOINT_URL')
 
     # MLflow 實驗名稱設定
     experiment_name = 'Titanic'

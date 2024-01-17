@@ -24,7 +24,7 @@
     ```
 
     ```python
-    # 套件宣告
+    # 套件宣告、環境變數設定
     import pandas as pd
     from sklearn.preprocessing import MinMaxScaler
     from sklearn.svm import SVC
@@ -34,7 +34,19 @@
     import os
     from datetime import datetime
     import gdown
+    from dotenv import load_dotenv
     ```
+    
+    0. 使用 load_dotenv 設定環境變數，其中分為單機版與多機板，選擇上取決於 Quick Install 安裝的版本
+
+    ```python
+        # 系統環境變數設定(單機版)
+        load_dotenv("../../mlops-sys/ml_experimenter/.env.local")
+
+        # 系統環境變數設定(多機版)
+        # load_dotenv("../../mlops-sys/ml_experimenter/.env")
+    ```
+
     1. 使用 gdown 獲取資料
         ```python
         # 資料下載 url
@@ -91,10 +103,7 @@
         
     5. 實驗紀錄至MLflow
         - MLflow 參數設定
-            
             ```python
-            mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI'))
-            
             experiment_name = 'Titanic'
             existing_exp = mlflow.get_experiment_by_name(experiment_name)
             
@@ -164,13 +173,26 @@
     * 模型訓練與模型評估
     * 使用 MLflow 紀錄
     
+    ```python
+     # 套件宣告、環境變數設定
+    import mlflow
+    from mlflow import MlflowClient
+    import os
+    from dotenv import load_dotenv
+    ```
+        
+    0. 使用 load_dotenv 設定環境變數，其中分為單機版與多機板，選擇上取決於 Quick Install 安裝的版本
+
+    ```python
+        # 系統環境變數設定(單機版)
+        load_dotenv("../../mlops-sys/ml_experimenter/.env.local")
+
+        # 系統環境變數設定(多機版)
+        # load_dotenv("../../mlops-sys/ml_experimenter/.env")
+    ```
+
     1. 註冊模型(Register model)
-        
-        ```python
-        import mlflow
-        from mlflow import MlflowClient
-        ```
-        
+
         - 獲得實驗編號
             
             ```python

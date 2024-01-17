@@ -1,19 +1,16 @@
 import pandas as pd
-from dotenv import load_dotenv
 import mlflow
 from mlflow import MlflowClient
 import os
+from dotenv import load_dotenv
 
+# 系統環境變數設定(單機版)
+load_dotenv("../../mlops-sys/ml_experimenter/.env.local")
+
+# 系統環境變數設定(多機版)
+# load_dotenv("../../mlops-sys/ml_experimenter/.env")
 
 def main():
-
-    # MLflow 環境設定
-    load_dotenv('/Users/shlongkuu/mlops/MLOps-is-all-you-need/mlops-sys/ml_experimenter/.env.local')
-    os.environ["AWS_ACCESS_KEY_ID"] = os.getenv('MINIO_ROOT_USER')
-    os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('MINIO_ROOT_PASSWORD')
-    os.environ["MLFLOW_S3_ENDPOINT_URL"] = os.getenv('MLFLOW_S3_ENDPOINT_URL')
-
-    mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI'))
 
     # 獲得實驗編號
     target_experiments = {}
