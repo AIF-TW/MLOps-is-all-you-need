@@ -2,24 +2,19 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVC
 from xgboost import XGBClassifier
-from dotenv import load_dotenv
 import mlflow
 import os
 from datetime import datetime
 import gdown
-
+from dotenv import load_dotenv
 
 def main():
-    '''
-    開發實驗階段
-    - 請先完成快速安裝
-    - 此為開發實驗階段主要跟大家分享如何將過程紀錄在MLflow中，並將每次的實驗紀錄(模型參數, Loss曲線, 評估指標…等)儲存起來，方便之後多實驗結果比較。
-    功能介紹
-    - 紀錄模型超參數及訓練結果、並將模型存到 Minio裡面
-    '''
 
     # 使用 Gdown 獲取資料
     # 資料下載 url
+    if not os.path.exists('data'):
+        os.mkdir('data')
+
     url = "https://drive.google.com/file/d/13_yil-3-ihA_px4nFdWq8KVoQWxxffHm/view?usp=sharing"
     gdown.download(url, output='data/titanic_data.csv', quiet=False, fuzzy=True)
 
@@ -39,8 +34,8 @@ def main():
     X_train = scaler.fit_transform(X_train)
     
     # 建立模型
-    model_svc = SVC(C=1.0,        # Regularization parameter
-                    kernel='rbf') # kernel
+    model_svc = SVC(C=1.0,        
+                    kernel='rbf')
 
     model_xgb = XGBClassifier(max_depth=2,
                             learning_rate=0.1)
@@ -57,11 +52,10 @@ def main():
     accuracy_xgb = (y_pred == y_train).sum()/y_train.shape[0]
     
     # MLflow 環境設定
-    load_dotenv('.env')
+    load_dotenv('/Users/shlongkuu/mlops/MLOps-is-all-you-need/mlops-sys/ml_experimenter/.env.local')
     os.environ["AWS_ACCESS_KEY_ID"] = os.getenv('MINIO_ROOT_USER')
     os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('MINIO_ROOT_PASSWORD')
     os.environ["MLFLOW_S3_ENDPOINT_URL"] = os.getenv('MLFLOW_S3_ENDPOINT_URL')
-    mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI'))
 
     # MLflow 實驗名稱設定
     experiment_name = 'Titanic'
@@ -71,12 +65,12 @@ def main():
         mlflow.create_experiment(experiment_name, "s3://mlflow/")
     mlflow.set_experiment(experiment_name)
 
-    # MLflow 上面訓練結果紀錄
+    # XGBoost 實驗紀錄
     now = datetime.now()
     dt_string = now.strftime("%Y-%m-%d %H-%M-%S")
     with mlflow.start_run(run_name='Run_%s' % dt_string):
         # 設定開發者名稱
-        mlflow.set_experiment_tag('developer', 'GU')
+        mlflow.set_experiment_tag('developer', 'aif')
 
         # 設定需要被紀錄的參數
         mlflow.log_params({
@@ -90,6 +84,7 @@ def main():
         # 上傳訓練好的模型
         mlflow.xgboost.log_model(model_xgb, artifact_path='Model')
 
+    # SVC 實驗紀錄
     now = datetime.now()
     dt_string = now.strftime("%Y-%m-%d %H-%M-%S")
     with mlflow.start_run(run_name='Run_%s' % dt_string):

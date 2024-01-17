@@ -6,22 +6,9 @@ import os
 
 
 def main():
-    '''
-    - 請先完成快速安裝與開發實驗階段
-    - 此部署階段主要跟大家分享如何將訓練好的模型進行部署，一般來說會有兩道手續：
 
-    1. 從眾多實驗中找出要將哪個模型進行部署，需要對該模型進行"註冊"(Register)
-    2. 使用註冊後的進行部署，並實際進行資料推論
-
-    - 因為部署階段需要使用到前面安裝步驟的相關套件，所以請先確保有確實完成快速安裝
-    - 此階段需要幾個訓練完成的模型並上傳至 MLflow，也請確定"開發實驗階段"有確實完成
-    
-    功能介紹
-    1. 註冊模型(Register model)
-    2. 模型部署預測
-    '''
     # MLflow 環境設定
-    load_dotenv('.env')
+    load_dotenv('/Users/shlongkuu/mlops/MLOps-is-all-you-need/mlops-sys/ml_experimenter/.env.local')
     os.environ["AWS_ACCESS_KEY_ID"] = os.getenv('MINIO_ROOT_USER')
     os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('MINIO_ROOT_PASSWORD')
     os.environ["MLFLOW_S3_ENDPOINT_URL"] = os.getenv('MLFLOW_S3_ENDPOINT_URL')
