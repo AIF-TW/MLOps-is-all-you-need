@@ -1,32 +1,16 @@
 import pandas as pd
-from dotenv import load_dotenv
 import mlflow
 from mlflow import MlflowClient
 import os
+from dotenv import load_dotenv
 
+# 系統環境變數設定(單機版)
+load_dotenv("../../mlops-sys/ml_experimenter/.env.local")
+
+# 系統環境變數設定(多機版)
+# load_dotenv("../../mlops-sys/ml_experimenter/.env")
 
 def main():
-    '''
-    - 請先完成快速安裝與開發實驗階段
-    - 此部署階段主要跟大家分享如何將訓練好的模型進行部署，一般來說會有兩道手續：
-
-    1. 從眾多實驗中找出要將哪個模型進行部署，需要對該模型進行"註冊"(Register)
-    2. 使用註冊後的進行部署，並實際進行資料推論
-
-    - 因為部署階段需要使用到前面安裝步驟的相關套件，所以請先確保有確實完成快速安裝
-    - 此階段需要幾個訓練完成的模型並上傳至 MLflow，也請確定"開發實驗階段"有確實完成
-    
-    功能介紹
-    1. 註冊模型(Register model)
-    2. 模型部署預測
-    '''
-    # MLflow 環境設定
-    load_dotenv('.env')
-    os.environ["AWS_ACCESS_KEY_ID"] = os.getenv('MINIO_ROOT_USER')
-    os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('MINIO_ROOT_PASSWORD')
-    os.environ["MLFLOW_S3_ENDPOINT_URL"] = os.getenv('MLFLOW_S3_ENDPOINT_URL')
-
-    mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI'))
 
     # 獲得實驗編號
     target_experiments = {}

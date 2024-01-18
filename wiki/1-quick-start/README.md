@@ -3,24 +3,50 @@
 # 開發實驗階段
 
 - 請先完成[0-Quick-install](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/0%E2%80%90Quick%E2%80%90install)
-- 此為開發實驗階段，主要跟大家分享如何將過程紀錄在MLflow中，並將每次的實驗紀錄(模型參數, Loss曲線, 評估指標…等)儲存起來，方便之後多實驗結果比較。
 
 ## 功能介紹
 
-- 紀錄模型超參數及訓練結果、並將模型存到 MinIO 裡面
+- [`experiment.py`](../../dev-projects/example_project/development.py) 主要是要分享如何使用我們在 Quick-install 建立的服務，開發階段主要使用 MLfow 紀錄實驗超參數、訓練結果及儲存模型，主要分為以下階段
+
+    * 套件安裝、環境設定與宣告
+    * 資料下載與前處理
+    * 模型訓練與模型評估
+    * 使用 MLflow 紀錄
+
+    ### 請先開啟一個新的終端機輸入以下指令，進行環境設定與套件安裝
+
+    ```
+    conda activate mlops
+
+    cd MLOps-is-all-you-need/dev-projects/quick_start
+
+    pip install -r requirements.txt
+    ```
+
     ```python
-    # 套件宣告
+    # 套件宣告、環境變數設定
     import pandas as pd
     from sklearn.preprocessing import MinMaxScaler
     from sklearn.svm import SVC
     from xgboost import XGBClassifier
-    from dotenv import load_dotenv
     import mlflow
     from mlflow import MlflowClient
     import os
     from datetime import datetime
     import gdown
+    from dotenv import load_dotenv
     ```
+    
+    0. 使用 load_dotenv 設定環境變數，其中分為單機版與多機板，選擇上取決於 Quick Install 安裝的版本
+
+    ```python
+        # 系統環境變數設定(單機版)
+        load_dotenv("../../mlops-sys/ml_experimenter/.env.local")
+
+        # 系統環境變數設定(多機版)
+        # load_dotenv("../../mlops-sys/ml_experimenter/.env")
+    ```
+
     1. 使用 gdown 獲取資料
         ```python
         # 資料下載 url
@@ -77,15 +103,7 @@
         
     5. 實驗紀錄至MLflow
         - MLflow 參數設定
-            
             ```python
-            load_dotenv('.env')
-            os.environ["AWS_ACCESS_KEY_ID"] = os.getenv('MINIO_ROOT_USER')
-            os.environ["AWS_SECRET_ACCESS_KEY"] = os.getenv('MINIO_ROOT_PASSWORD')
-            os.environ["MLFLOW_S3_ENDPOINT_URL"] = os.getenv('MLFLOW_S3_ENDPOINT_URL')
-            
-            mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI'))
-            
             experiment_name = 'Titanic'
             existing_exp = mlflow.get_experiment_by_name(experiment_name)
             
@@ -142,21 +160,39 @@
 # 佈署階段
 
 - 請先完成[0-Quick-install](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/0%E2%80%90Quick%E2%80%90install)與[開發實驗階段](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/1%E2%80%90Quick%E2%80%90start#%E9%96%8B%E7%99%BC%E5%AF%A6%E9%A9%97%E9%9A%8E%E6%AE%B5)
-- 此部署階段主要跟大家分享如何將訓練好的模型進行部署，一般來說會有兩道手續：
+
+- [`deployment.py`](../../dev-projects/example_project/development.py)分享如何使用 MLflow  將訓練好的模型進行部署，一般來說會有兩道手續：
     1. 從眾多實驗中找出要將哪個模型進行部署，需要對該模型進行"註冊"(Register)
     2. 使用註冊後的進行部署，並實際進行資料推論
-    - 因為部署階段需要使用到前面安裝步驟的相關套件，所以請先確保有確實完成快速安裝
-    - 此階段需要幾個訓練完成的模型並上傳至 MLflow，也請確定"開發實驗階段"有確實完成
+    - 因為部署階段需要使用到前面安裝步驟的相關套件，所以請先確保有確實完成 Quick install
+    - 此階段需要幾個訓練完成的模型並上傳至 MLflow，也請確定[`experiment.py`](../../dev-projects/example_project/development.py)有確實完成
     
-    ## **功能介紹**
+    ## 功能介紹
+    * 使用 MLflow 將訓練好的模型進行
+    * 資料下載與前處理
+    * 模型訓練與模型評估
+    * 使用 MLflow 紀錄
     
+    ```python
+     # 套件宣告、環境變數設定
+    import mlflow
+    from mlflow import MlflowClient
+    import os
+    from dotenv import load_dotenv
+    ```
+        
+    0. 使用 load_dotenv 設定環境變數，其中分為單機版與多機板，選擇上取決於 Quick Install 安裝的版本
+
+    ```python
+        # 系統環境變數設定(單機版)
+        load_dotenv("../../mlops-sys/ml_experimenter/.env.local")
+
+        # 系統環境變數設定(多機版)
+        # load_dotenv("../../mlops-sys/ml_experimenter/.env")
+    ```
+
     1. 註冊模型(Register model)
-        
-        ```python
-        import mlflow
-        from mlflow import MlflowClient
-        ```
-        
+
         - 獲得實驗編號
             
             ```python
@@ -210,3 +246,7 @@
             result = model.predict(X_train[:1])
             print(result)
             ```
+
+完成[`deployment.py`](../../dev-projects/example_project/development.py)可以進入MLflow UI http://localhost:5050/#/models 查看註冊的模型(Registered Model)
+
+![prefect_server_success_ui](png/Registered_Model_page.png)
