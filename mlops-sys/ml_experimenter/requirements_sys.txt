@@ -12,5 +12,8 @@ mlflow==2.5.0
 dvc
 dvc_s3
 
+# load_dotenv
+python-dotenv
+
 # jupyter notebook
 jupyter
