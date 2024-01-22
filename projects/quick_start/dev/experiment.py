@@ -9,10 +9,10 @@ import gdown
 from dotenv import load_dotenv
 
 # 系統環境變數設定(單機版)
-load_dotenv("../../mlops-sys/ml_experimenter/.env.local")
+load_dotenv("../../../mlops-sys/ml_experimenter/.env.local")
 
 # 系統環境變數設定(多機版)
-# load_dotenv("../../mlops-sys/ml_experimenter/.env")
+# load_dotenv("../../../mlops-sys/ml_experimenter/.env")
 
 def main():
 
