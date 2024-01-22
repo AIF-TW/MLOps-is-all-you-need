@@ -1,11 +1,8 @@
-# flow.py 會用到的相關套件 (除 mlflow==2.5.0 和 prefect==2.10.9 以外)
-
-## 下方以 flows/example_flow 為例
-
-### dumping function
-dill==0.3.6
+# flow.py 會用到的相關套件 (排除 mlflow==2.5.0, prefect==2.10.9, python-dotenv)
 
 pandas==2.0.2
 scikit-learn==1.2.2
 xgboost==1.7.6
-hyperopt==0.2.7
+
+# Google Drive
+gdown==4.6.3
