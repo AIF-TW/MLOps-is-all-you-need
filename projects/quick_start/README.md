@@ -18,7 +18,7 @@
     ```
     conda activate mlops
 
-    cd MLOps-is-all-you-need/projects/quick_start
+    cd ~/MLOps-is-all-you-need/projects/quick_start
 
     pip install -r requirements.txt
     ```
@@ -173,6 +173,15 @@
     * 模型訓練與模型評估
     * 使用 MLflow 紀錄
     
+    ### 請先開啟一個新的終端機輸入以下指令
+
+    ```
+    conda activate mlops
+
+    cd ~/MLOps-is-all-you-need/projects/quick_start
+
+    ```
+
     ```python
      # 套件宣告、環境變數設定
     import mlflow
