@@ -6,16 +6,12 @@ import mlflow
 import os
 from datetime import datetime
 import gdown
-from dotenv import load_dotenv
 
-# 系統環境變數設定(單機版)
-load_dotenv("../../mlops-sys/ml_experimenter/.env.local")
+from prefect import flow, task
 
-# 系統環境變數設定(多機版)
-# load_dotenv("../../mlops-sys/ml_experimenter/.env")
 
-def main():
-
+@task()
+def get_data():
     # 使用 Gdown 獲取資料
     # 資料下載 url
     if not os.path.exists('data'):
@@ -24,9 +20,10 @@ def main():
     url = "https://drive.google.com/file/d/13_yil-3-ihA_px4nFdWq8KVoQWxxffHm/view?usp=sharing"
     gdown.download(url, output='data/titanic_data.csv', quiet=False, fuzzy=True)
 
-    # 資料讀取
+@task()
+def data_prep():
+     # 資料讀取
     data = pd.read_csv("data/titanic_data.csv")
-
     # 將 Age 的缺失值補 Age 的平均數
     data['Age'].fillna(data['Age'].mean(), inplace = True)
     # 資料 Ground Truth 設定
@@ -38,7 +35,11 @@ def main():
     # 將連續變項歸一化(MinMaxScaler): 將數值壓縮到0~1之間
     scaler = MinMaxScaler()
     X_train = scaler.fit_transform(X_train)
-    
+
+    return X_train, y_train
+
+@task()
+def model_train(X_train, y_train):
     # 建立模型
     model_svc = SVC(C=1.0,        
                     kernel='rbf')
@@ -56,6 +57,11 @@ def main():
 
     y_pred = model_xgb.predict(X_train)
     accuracy_xgb = (y_pred == y_train).sum()/y_train.shape[0]
+
+    return model_svc, model_xgb, accuracy_svc, accuracy_xgb
+
+@task()
+def mlflow_log(model_svc, model_xgb, accuracy_svc, accuracy_xgb):
 
     # MLflow 實驗名稱設定
     experiment_name = 'Titanic'
@@ -103,5 +109,16 @@ def main():
         # 上傳訓練好的模型
         mlflow.sklearn.log_model(model_svc, artifact_path='Model')
 
-if __name__=="__main__":
-    main()
+@flow()
+def main():
+    # task 1
+    get_data()
+
+    # task 2
+    X_train, y_train = data_prep()
+
+    # task 3
+    model_svc, model_xgb, accuracy_svc, accuracy_xgb = model_train(X_train, y_train)
+
+    # task 4
+    mlflow_log(model_svc, model_xgb, accuracy_svc, accuracy_xgb)
