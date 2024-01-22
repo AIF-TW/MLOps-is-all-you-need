@@ -1,16 +1,14 @@
 import os
+from datetime import datetime
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 import torchvision
 from torchvision import transforms
+from torchinfo import summary
 import numpy as np
-from prefect import task, flow
 import mlflow
-from datetime import datetime
-import yaml
-from minio import Minio
 
 class Net(nn.Module):
     """
@@ -55,33 +53,6 @@ class Net(nn.Module):
 
         return output
 
-@task(name='Pulling dataset', log_prints=True)
-def fetch_dataset(cfg):
-    # 下載MNIST.DVC
-    client = Minio(
-        endpoint=cfg['dataset']['dvc_endpoint_for_client'], 
-        access_key=os.getenv('AWS_ACCESS_KEY_ID'), 
-        secret_key=os.getenv('AWS_SECRET_ACCESS_KEY'), 
-        secure=False
-    )
-
-    client.get_object('dvc', 'mnist/MNIST.dvc', './MNIST.dvc',)
-
-    print(f"Pulling data from remote {cfg['dataset']['dvc_remote']}...")
-    # DVC pulls the data from remote
-    os.system('git init')
-    os.system('dvc init')
-    os.system(f"dvc remote add remote {cfg['dataset']['dvc_remote']} -f")
-    os.system('dvc remote modify remote endpointurl ${MLFLOW_S3_ENDPOINT_URL}')
-    os.system('dvc pull -r remote')
-
-    # 取得資料標籤並紀錄
-    data_version = os.popen('git describe --tags').read()[:-1]
-    print(f'Current data version: {data_version}')
-
-    return data_version
-
-@task(name='Preprocessing')
 def preprocessing(root=f'./data/MNIST/train', shuffle_data=True, batch_size=64, random_seed=1, val_size=0.2):
     transform_list = transforms.Compose(
         [
@@ -122,8 +93,7 @@ def preprocessing(root=f'./data/MNIST/train', shuffle_data=True, batch_size=64, 
 
     return train_loader, val_loader
 
-@task(name='Model training', log_prints=True)
-def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs=5, learning_rate=0.01, device_name='cpu'):
+def model_training(train_loader, val_loader, model, n_epochs=5, learning_rate=0.01, device_name='cpu'):
     date_time_now = datetime.now()
     mlflow_run_name = f'Run_{str(date_time_now.strftime("%Y-%m-%d"))}-{str(date_time_now.strftime("%H-%M-%S"))}'
 
@@ -132,7 +102,7 @@ def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs
         mlflow.set_tags(
             {
                 'Training device': device_name,
-                'Phase': 'Retraining'
+                'Phase': 'Experimental'
             }
         )
 
@@ -149,7 +119,6 @@ def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs
 
         # 紀錄實驗參數
         mlflow.log_params({
-            'Data version': data_version,
             'Model': model.__class__.__name__,
             'Number of epochs': n_epochs,
             'Optimizer': type(optimizer).__name__,
@@ -214,44 +183,27 @@ def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs
 
         mlflow.pytorch.log_model(model, artifact_path='Model')  # 儲存模型，未來可隨時用來進行推論
 
-@flow(name=f'MNIST', log_prints=True)
 def main():
-    cfg = {}
-    # 排程相關設定
-    with open('config/flow.yml', 'r') as f:
-        cfg['flow'] = yaml.safe_load(f)
-    
-    # 超參數相關設定
-    with open('config/hyp.yml', 'r') as f:
-        cfg['hyp'] = yaml.safe_load(f)
-
-    # 資料集相關設定
-    with open('config/dataset.yml', 'r') as f:
-        cfg['dataset'] = yaml.safe_load(f)
-
     # 設定環境變數
     # 這邊很重要，如果程式沒有正確讀取這些環境變數，可能會造成MLflow無法追蹤實驗，或無法執行
-    os.environ["MLFLOW_S3_ENDPOINT_URL"] = cfg['dataset']['dvc_s3_endpoint_url']
-    os.environ["LOGNAME"] = cfg['flow']['developer_name']  # 設定要紀錄在實驗的使用者名稱
+    os.environ["LOGNAME"] = 'AIF'  # 設定要紀錄在實驗的使用者名稱
 
     # 設定MLflow用來儲存實驗結果的路徑
+    mlflow.set_tracking_uri(os.getenv('MLFLOW_SERVER'))
     print(f"MLflow server: {mlflow.get_tracking_uri()}")
 
     # 設定實驗名稱，如果該實驗不存在則建立
-    if not mlflow.get_experiment_by_name(cfg['flow']['experiment_name']):  # 確認'experiment_name'為名的實驗存在與否
-        mlflow.create_experiment(cfg['flow']['experiment_name'], f"s3://{os.getenv('MLFLOW_BUCKET_NAME')}/")
-    mlflow.set_experiment(cfg['flow']['experiment_name'])
-
-    # 從DVC remote下載資料
-    data_version = fetch_dataset(cfg)
+    if not mlflow.get_experiment_by_name('MNIST'):  # 確認'experiment_name'為名的實驗存在與否
+        mlflow.create_experiment('MNIST', f"s3://{os.getenv('MLFLOW_BUCKET_NAME')}/")
+    mlflow.set_experiment('MNIST')
 
     # 資料前處理
     train_loader, val_loader = preprocessing(
-        root=cfg['dataset']['train_data_path'],
-        shuffle_data=cfg['hyp']['hyperparameter']['shuffle_data'],
-        batch_size=cfg['hyp']['hyperparameter']['batch_size'],
-        random_seed=cfg['hyp']['hyperparameter']['random_seed'],
-        val_size=cfg['hyp']['hyperparameter']['val_size']
+        root='./data/MNIST/train',
+        shuffle_data=True,
+        batch_size=64,
+        random_seed=1,
+        val_size=0.2
     )
 
     # 模型訓練
@@ -259,9 +211,9 @@ def main():
         train_loader=train_loader,
         val_loader=val_loader,
         model=Net(),
-        data_version=data_version,
-        n_epochs=cfg['hyp']['hyperparameter']['n_epochs'],
-        learning_rate=cfg['hyp']['hyperparameter']['learning_rate'],
+        n_epochs=24,
+        learning_rate=0.0005,
+        # device_name='mps' if torch.backends.mps.is_available() else 'cpu'
         device_name='cuda' if torch.cuda.is_available() else 'cpu'
     )
 

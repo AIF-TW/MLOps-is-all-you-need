@@ -122,18 +122,24 @@ git commit -m "Add some images"
 git tag -a "v2.0" -m "More images added."
 dvc push -r minio_s3
 #git push  # 如果有遠端的git repo才需要執行
+
+python3 upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
 ````
 </details>
 
 ### 2. 實驗性的訓練
-執行`MLOps-is-all-you-need/flows/flow-mnist/mnist.ipynb`的所有步驟，完成模型訓練與追蹤。
+````shell
+cd MLOps-is-all-you-need/projects/mnist/
+python3 mnist.py
+````
+執行`MLOps-is-all-you-need/projects/mnist/mnist.py`的所有步驟，完成一次模型訓練並且用MLflow追蹤訓練結果。
 
 <details>
 <summary>
 如何在MLflow UI檢視實驗結果
 </summary>
 
-待`mnist.ipynb`全部執行完，就可以進入MLflow UI檢視剛才紀錄的實驗結果，進入MLflow UI後，於畫面左側實驗名稱點選「MNIST」，進入到這個實驗的頁面：
+進入MLflow UI後，於畫面左側實驗名稱點選「MNIST」，進入到這個實驗的頁面：
 ![image](./png/MLflow_exp.png)
 
 進入實驗後，點選某一次的執行即可檢視結果：
@@ -145,7 +151,7 @@ dvc push -r minio_s3
 ### 3. 模型的定期再訓練
 #### 3.1. 製作自動化排程
 打開`MLOps-is-all-you-need/mlops-sys/flow_scheduler/.env.local`，更改以下設定：
-```shell
+```
 # FLOW_DIR = '../../flows/example_flow' # project directory of your flow.py
 改為
 FLOW_DIR = '../../flows/flow-mnist' # project directory of your flow.py
@@ -159,14 +165,15 @@ docker compose -f docker-compose-local.yml --env-file ./.env.local up --build
 
 這個步驟的目的是將工作資料夾（就是`flow-mnist`）上傳到Prefect伺服器，並且製作排程。當容器成功建立，會看到包含以下文字的訊息：
 ````
- ✔ Container flow_scheduler
-Attaching to flow_scheduler
-flow_scheduler  | Created work pool 'mnist-cpu'.
+ ✔ Container flow_scheduler  Recreated
+flow_scheduler  | Work pool named 'mnist-cpu' already exists. Please try creating your work pool 
+flow_scheduler  | again with a different name.
 flow_scheduler  | Found flow 'MNIST'
+flow_scheduler  | Default '.prefectignore' file written to /root/flows/.prefectignore
 flow_scheduler  | Deployment YAML created at '/root/flows/main-deployment.yaml'.
-flow_scheduler  | Successfully uploaded 53 files to s3://prefect/main/model_training
+flow_scheduler  | Successfully uploaded 8 files to s3://prefect/main/model_training
 flow_scheduler  | Deployment 'MNIST/model_training' successfully created with id 
-flow_scheduler  | '67d9ff64-66a7-4567-8075-531326d671d9'.  # 這個id可能隨著在不同環境執行而有所不同
+flow_scheduler  | '476b5fc2-cb78-4e32-99ea-961ee84873a0'.  # 在你的環境執行時，可能會看到不同的id
 flow_scheduler  | 
 flow_scheduler  | To execute flow runs from this deployment, start an agent that pulls work from 
 flow_scheduler  | the 'mnist-cpu' work pool:

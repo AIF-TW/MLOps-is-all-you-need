@@ -15,8 +15,7 @@ git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版
 export AWS_ACCESS_KEY_ID=$MINIO_ROOT_USER
 export AWS_SECRET_ACCESS_KEY=$MINIO_ROOT_PASSWORD
 
-echo "Pushing to s3://$DVC_BUCKET_NAME/$PROJECT_NAME/"
-dvc remote add -f minio_s3 s3://$DVC_BUCKET_NAME/$PROJECT_NAME/  # remote為自定義的遠端名稱
+dvc remote add -f minio_s3 s3://$DVC_BUCKET_NAME/$PROJECT_NAME/dvc_remote  # remote為自定義的遠端名稱
 dvc remote modify minio_s3 endpointurl $MLFLOW_S3_ENDPOINT_URL
 dvc push -r minio_s3  # 推送至minio_s3
 
@@ -34,3 +33,5 @@ git commit -m "Add some images"
 git tag -a "v2.0" -m "More images added."
 dvc push -r minio_s3
 #git push  # 如果有遠端的git repo才需要執行
+
+python3 upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO

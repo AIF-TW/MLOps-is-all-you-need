@@ -9,3 +9,4 @@ dvc_s3==2.23.0
 pyyaml==6.0.1
 torchinfo==1.8.0
 python-dotenv==1.0.0
+minio==7.2.2
