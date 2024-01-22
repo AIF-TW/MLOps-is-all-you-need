@@ -1,2 +1,6 @@
-# xgboost
+pandas
+scikit-learn
 xgboost
+
+# Google Drive
+gdown==4.6.3
