@@ -1,0 +1,6 @@
+# 訓練資料相關設定
+train_data_path: './MNIST/train'  # 訓練資料相對於flows_mnist的相對路徑
+dvc_remote: 's3://dvc/mnist/dvc_remote'  # DVC remote
+
+dot_dvc_path: 'mnist/dot_dvc_file/MNIST.dvc'  # 存放MNIST.dvc的路徑
+dvc_s3_endpoint_url: 'http://minio:9000'  # DVC_S3_ENDPOINT_URL
