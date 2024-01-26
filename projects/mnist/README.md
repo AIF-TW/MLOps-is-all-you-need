@@ -27,7 +27,8 @@
 * Prefect
 * MLflow
 
-2. 此範例的所有步驟都需要在[快速安裝](/wiki/0-quick-install/README.md)建立的環境`mlops`操作。如果尚未進到`mlops`環境，可以在終端機執行`conda activate mlops`來進入環境。
+2. 此範例的所有步驟都需要在[`quick_install`](/projects/quick_install/)建立的環境`mlops`操作。
+> 如果尚未進到`mlops`環境，可以在終端機執行`conda activate mlops`來進入環境。
 
 ## 工作資料夾結構
 ```
@@ -203,7 +204,7 @@ Prefect Agent會依照排程指定的時間自Prefect伺服器下載工作資料
 <summary>確認方式：</summary>
 
   在終端機執行```nvidia-smi```來開啟[NVIDIA System Management Interface](https://developer.nvidia.com/nvidia-system-management-interface)，假如能看到所有已裝備的GPU以及CUDA版本，如下列範例，就代表所需的驅動都已裝好。如果未能看到設備安裝的GPU，可能是因為沒有正確安裝驅動程式。
-  ````shell
+  ````
   (mlops) aif@aif_mlops:~$ nvidia-smi
   Thu Jan 25 14:46:01 2024       
   +-----------------------------------------------------------------------------+
