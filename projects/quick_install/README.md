@@ -18,7 +18,7 @@
 > 註：如果是 Windows作業系統，建議使用 Bash 執行此章節的指令，比如使用 `Git Bash` 執行。 `Git Bash` 會在下載 `Git` 套件的時候一併下載，使用方式請參考 [如何在VScode 使用 git bash](https://code.visualstudio.com/docs/sourcecontrol/intro-to-git#_git-bash-on-windows)。
 
 2. 開啟終端機，在根目錄下載此專案
-    > 如果不在根目錄下載請特別注意檔案路徑
+    > 如果不在根目錄下載請特別注意檔案路徑，後續內容需要自行調整檔案路徑
     ```
     git clone https://github.com/AIF-TW/MLOps-is-all-you-need.git ~/MLOps-is-all-you-need
     ```
@@ -226,6 +226,9 @@
     ```
 
 4. 若有看到以上的成功訊息後，接著可以透過在瀏覽器輸入對應的網址，開始使用以下 GUI 的服務
+
+    > 瀏覽器建議使用 Google Chrome 或是 Microsoft Edge
+
     > 請將下方 `IP` 替換成 `localhost`(單機模式) 或是 `SERVER_IP` (多機模式)
 
 - MinIO (網址: `http://IP:9001`，帳號：`admin`，密碼：`adminsecretkey`)
@@ -245,6 +248,11 @@
 > 請開啟新的終端機環境執行本小節的指令
 
 1. `ml_experimenter` 包含建置開發環境需要的檔案，為確保開發環境獨立，我們先利用 conda 建立一個獨立開發環境 `mlops`，並進入該環境
+    ```
+    # 使用 Git Bash 的 windows 用戶需額外執行下列程式碼，才能正常使用 conda
+    source activate
+    ```
+
     ```
     conda create -n mlops python=3.10 -y    # 建立獨立開發環境
     conda activate mlops                    # 進入該開發環境
@@ -273,6 +281,9 @@
     ```
 
 5. [可選擇] 在此開發資料夾中，可以透過初始化 Git 與 DVC 啟用程式碼與資料版本控制服務 
+    <details><summary>程式碼</summary>
+    <p>
+
     ```
     # 單機模式
     source ~/MLOps-is-all-you-need/mlops-sys/ml_experimenter/.env.local
@@ -308,6 +319,8 @@
     - Get help and share ideas: <https://dvc.org/chat>
     - Star us on GitHub: <https://github.com/iterative/dvc>
     ```
+    </p>
+    </detail>
 
 6. 最後我們只需要在 `.py` 中，透過加入下方程式碼導入環境變數，就能使用 MLflow 套件做模型版本控制了。
     ```
@@ -325,14 +338,14 @@
     ```
     > 程式碼範例請參考 [projects/quick_start/dev/experiment.py](../quick_start/dev/experiment.py) 
 
-    > 更多細節說明請參考 quick-start 章節
+    > 更多細節說明請參考 [mnist 章節](../mnist/readme.md)
 
 ### 工作流程的排程功能 Flow Scheduler
 > `多機模式` 請在 `電腦3` 執行此段落
 
 > 請開啟新的終端機環境執行本小節的指令
 
-1. 要幫專案建立排程，請在專案資料夾底下建立排程資料夾 `flow` ，並將開發資料夾 `dev` 的檔案複製到`flow` 中，以及將複製到 `flow` 的主要 `.py` 檔加入 Prefect 的排程功能。加入 Prefect 排程設定的方式，主要是在 Python 函式中加入 Prefect 裝飾器，例如：
+1. 要幫專案建立排程，請在專案資料夾底下建立排程資料夾 `flow` ，並將開發資料夾 `dev` 的檔案複製到`flow` 中，以及將複製到 `flow` 的主要 `.py` 檔加入 Prefect 的排程功能。加入 Prefect 排程設定的方式，主要是在 Python 函式中加入 Prefect 裝飾器 (decorator)，例如：
     ```
     from prefect import flow, task
 
