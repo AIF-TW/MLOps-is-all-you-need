@@ -1,8 +1,8 @@
 # Quick start
 
 # 開發實驗階段
-
-- 請先完成[0-Quick-install](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/0%E2%80%90Quick%E2%80%90install)
+- Quck start 主要示範如何使用 MLflow 的服務
+- 所以請先完成 [Quick-install](../quick_install/README.md)
 
 ## 功能介紹
 
@@ -18,7 +18,7 @@
     ```
     conda activate mlops
 
-    cd ~/MLOps-is-all-you-need/projects/quick_start
+    cd ~/MLOps-is-all-you-need/projects/quick_start/dev
 
     pip install -r requirements.txt
     ```
@@ -38,7 +38,7 @@
     ```
     
     0. 使用 load_dotenv 設定環境變數，其中分為單機版與多機板，選擇上取決於 Quick Install 安裝的版本
-        * 環境變數設定檔(.env.local, .env) 放在 mlops-sys/ml_experimenter 中，再程式碼中需要指定到對應路徑，下面程式已相對路徑設定。
+        * 環境變數設定檔(.env.local, .env) 放在 mlops-sys/ml_experimenter 中，在程式碼中需要指定到對應路徑，下面程式已相對路徑設定。
     ```python
         # 系統環境變數設定(單機版)
         load_dotenv("../../../mlops-sys/ml_experimenter/.env.local")
@@ -159,7 +159,7 @@
 
 # 佈署階段
 
-- 請先完成[0-Quick-install](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/0%E2%80%90Quick%E2%80%90install)與[開發實驗階段](https://github.com/AIF-TW/MLOps-is-all-you-need/wiki/1%E2%80%90Quick%E2%80%90start#%E9%96%8B%E7%99%BC%E5%AF%A6%E9%A9%97%E9%9A%8E%E6%AE%B5)
+- 請先完成 [Quick-install](../quick_install/README.md) 與 [experiment.py](./dev/experiment.py)
 
 - [`deployment.py`](../../projects/quick_start/dev/deployment.py)分享如何使用 MLflow  將訓練好的模型進行部署，一般來說會有兩道手續：
     1. 從眾多實驗中找出要將哪個模型進行部署，需要對該模型進行"註冊"(Register)
@@ -178,7 +178,7 @@
     ```
     conda activate mlops
 
-    cd ~/MLOps-is-all-you-need/projects/quick_start
+    cd ~/MLOps-is-all-you-need/projects/quick_start/dev
 
     ```
 
