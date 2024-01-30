@@ -172,7 +172,7 @@ python3 mnist.py
 ```
 # FLOW_DIR = '../../flows/example_flow' # project directory of your flow.py
 改為
-FLOW_DIR = '../../flows/flow-mnist' # project directory of your flow.py
+FLOW_DIR = '../../projects/mnist/flow' # project directory of your flow.py
 ```
 
 執行以下指令將排程資料上傳到Prefect伺服器：
