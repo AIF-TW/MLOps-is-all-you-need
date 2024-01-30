@@ -6,10 +6,10 @@ deployment:
 
   # 以下的flow_name與deploy_name會顯示在Prefect UI，為了方便管理，建議每個專案都有不同的flow_name與deploy_name名稱
   flow_name: main  # 建議設定為專案名稱，與flow.py裡面以「@flow」裝飾的主函式名稱相同
-  deploy_name: model_training-gpu  # 目的，如daliy_model、data_update
+  deploy_name: model_training-cpu  # 目的，如daliy_model、data_update
 
-  pool_name: mnist-gpu  # 要調用的運算資源
-  queue_name: mnist-gpu  # 專案名稱
+  pool_name: mnist-cpu  # 要調用的運算資源
+  queue_name: mnist-cpu  # 專案名稱
 
 # 排程相關設定
 scheduler:

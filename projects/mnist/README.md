@@ -35,12 +35,11 @@
 mnist
 ├── README.md
 ├── dev
-│   ├── data
-│   │   ├── MNIST.zip
-│   │   ├── data_version.sh
-│   │   └── upload_dvc_file_to_minio.py
+│   ├── MNIST.zip
+│   ├── data_version.sh
 │   ├── mnist.py
-│   └── requirements.txt
+│   ├── requirements.txt
+│   └── upload_dvc_file_to_minio.py
 ├── flow
 │   ├── config
 │   │   ├── dataset.yml
@@ -51,22 +50,28 @@ mnist
 └── img
 ```
 * `dev/`: 開發階段的相關檔案
-  - `data/`: 放置資料集與版本控制檔案
-    - `MNIST.zip`: MNIST資料集，解壓縮後會產生`MNIST/`資料夾，內容為訓練資料與測試資料
-    - `data_version.sh`: 用來完成資料版本控制的Shell檔
+  - `MNIST.zip`: MNIST資料集，解壓縮後會產生`data/`資料夾，內容為訓練資料與測試資料
+  - `data_version.sh`: 用來完成資料版本控制的Shell檔
   - `mnist.py`: 執行模型訓練任務的Python檔
   - `requirements.txt`: 執行任務所需的套件清單
+  - `upload_dvc_file_to_minio.py`: 用來上傳`data.dvc`到S3
 
 * `flow/`: 排程階段的相關檔案
   - `config/`: 放置任務的各項設定值
-    - `dataset.yaml`: 資料集相關設定，例如資料的路徑
-    - `flow.yaml`: 排程相關設定
-    - `hyp.yaml`: 模型超參數設定
+    - `dataset.yml`: 資料集相關設定，例如資料的路徑
+    - `flow.yml`: 排程相關設定
+    - `hyp.yml`: 模型超參數設定
   - `flow.py`: 要讓Prefect自動執行的Python檔
+  - `requirements.txt`: 執行任務所需的套件清單
 
 ## 執行步驟
 ### 1. 資料版本控制
-在`MLOps-is-all-you-need/projects/mnist/dev/data`路徑執行`data_version.sh`：
+首先安裝`mnist`專案所需的全部套件，在`MLOps-is-all-you-need/projects/mnist/dev/`路徑下執行以下指令：
+````shell
+pip install -r requirements.txt
+````
+
+在`MLOps-is-all-you-need/projects/mnist/dev/`路徑執行`data_version.sh`：
 ````shell
 . ./data_version.sh
 ````
@@ -75,19 +80,22 @@ mnist
   <summary>將<code>MNIST/</code>資料夾加入追蹤，建立v1.0的資料集</summary>
 
 ````shell
-if [ -e MNIST ]; then
-    echo 'MNIST/ exists.'
+source ../../../mlops-sys/ml_experimenter/.env.local
+
+mkdir data
+if [ -e data/MNIST ]; then
+    echo 'data/MNIST/ exists.'
 else
-    unzip MNIST.zip
+    unzip MNIST.zip -d data/
 fi
 
 # 製作v1.0的訓練資料，並讓DVC開始追蹤
 git init  # 需要先以git對資料夾進行初始化
 dvc init  # DVC對資路夾進行初始化
-dvc add MNIST  # 將MNIST資料夾以DVC追蹤
-git add .gitignore MNIST.dvc  # git add 後面的檔案順序可對調
+dvc add data  # 將MNIST資料夾以DVC追蹤
+git add data.dvc .gitignore
 git commit -m "First version of training data."  # 以git對.dvc進行版控
-git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版本時比較方便
+git tag -a "v1.0" -m "Created dataset."  # 建立標籤，未來要重回某個版本時比較方便 
 ````
 </details>
 
@@ -95,16 +103,22 @@ git tag -a "v1.0" -m "Created MNIST."  # 建立標籤，未來要重回某個版
   <summary>推送至DVC remote</summary>
 
 ````shell
-dvc remote add -f minio_s3 s3://$DVC_BUCKET_NAME/$PROJECT_NAME  # remote為自定義的遠端名稱
-dvc remote modify minio_s3 endpointurl $MLFLOW_S3_ENDPOINT_URL
-dvc push -r minio_s3  # 推送至minio_s3
-````
+# 製作v1.0的訓練資料，並讓DVC開始追蹤
+git init  # 需要先以git對資料夾進行初始化
+dvc init  # DVC對資路夾進行初始化
+dvc add data  # 將MNIST資料夾以DVC追蹤
+git add data.dvc .gitignore
+git commit -m "First version of training data."  # 以git對.dvc進行版控
+git tag -a "v1.0" -m "Created dataset."  # 建立標籤，未來要重回某個版本時比較方便 
 
-要在其他設備或容器下載資料集的話，只要取得`MNIST.dvc`，執行以下程式碼即可（必須確認環境變數已設定好）：
-````commandline
-dvc remote add remote [DVC_REMOTE]
-dvc remote modify remote endpointurl [ENDPOINT_URL]
-dvc pull --remote remote
+# ----------- dvc remote setting -----------
+dvc remote add -f minio_s3 $MINIO_S3_PROJECT_BUCKET/dvc_remote  # remote為自定義的遠端名稱
+dvc remote modify minio_s3 endpointurl $MLFLOW_S3_ENDPOINT_URL
+dvc remote modify minio_s3 access_key_id $AWS_ACCESS_KEY_ID
+dvc remote modify minio_s3 secret_access_key $AWS_SECRET_ACCESS_KEY
+# ------------------------------------------
+
+dvc push -r minio_s3  # 推送至minio_s3
 ````
 </details>
 
@@ -115,13 +129,13 @@ dvc pull --remote remote
 # 將更多訓練資料加入train/
 for ((digit=0; digit<=9; digit++))
 do
-    mv ./MNIST/train_v2/$digit/* ./MNIST/train/$digit/
+    mv ./data/MNIST/train_v2/$digit/* ./data/MNIST/train/$digit/
 done
-rm -r ./MNIST/train_v2/
+rm -r ./data/MNIST/train_v2/
 
 # 製作v2.0的訓練資料
-dvc add MNIST
-git add MNIST.dvc
+dvc add data
+git add data.dvc
 git commit -m "Add some images"
 git tag -a "v2.0" -m "More images added."
 dvc push -r minio_s3
@@ -133,7 +147,7 @@ python3 upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
 
 ### 2. 實驗性的訓練
 ````shell
-cd MLOps-is-all-you-need/projects/mnist/dev
+cd MLOps-is-all-you-need/projects/mnist/dev/
 python3 mnist.py
 ````
 執行`MLOps-is-all-you-need/projects/mnist/mnist.py`的所有步驟，完成一次模型訓練並且用MLflow追蹤訓練結果。

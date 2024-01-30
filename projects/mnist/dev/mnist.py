@@ -187,9 +187,11 @@ def model_training(train_loader, val_loader, model, n_epochs=5, learning_rate=0.
 def main():
     # 設定環境變數
     # 這邊很重要，如果程式沒有正確讀取這些環境變數，可能會造成MLflow無法正常追蹤實驗，或無法執行
-    load_dotenv(os.path.abspath('../../../mlops-sys/ml_experimenter/.env.local'))
+    load_dotenv('../../../mlops-sys/ml_experimenter/.env.local')
 
     print(f"MLflow server: {mlflow.get_tracking_uri()}")
+
+    os.environ["LOGNAME"] = 'AIF'  # 設定要紀錄在實驗的使用者名稱
 
     # 設定實驗名稱，如果該實驗不存在則建立
     if not mlflow.get_experiment_by_name('MNIST'):  # 確認'experiment_name'為名的實驗存在與否
