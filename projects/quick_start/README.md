@@ -158,7 +158,7 @@
                 mlflow.sklearn.log_model(model_svc, artifact_path='Model')
             ```
 
-完成[`experiment.py`](../../projects/quick_start/dev/experiment.py) 可以進入MLflow UI http://localhost:5050/ 左側 Experiments 選取 Titanc 可以看到兩個模型已被記錄。
+完成[`experiment.py`](../../projects/quick_start/dev/experiment.py) 可以進入MLflow UI http://localhost:5050/ 左側 Experiments 選取 Titanic 可以看到兩個模型已被記錄。
 
 ![Experiment_page_ui](img/Experiment_page.png)     
 
