@@ -1,8 +1,8 @@
-# Quick start
+# Quick-start
 
 # 開發實驗階段
-- Quck start 主要示範如何使用 MLflow 的服務
-- 所以請先完成 [Quick-install](../quick_install/README.md)
+- Quck-start 主要示範如何使用 MLflow 的服務
+- 請先完成 [Quick-install](../quick_install/README.md)
 
 ## 功能介紹
 
@@ -22,9 +22,9 @@
 
     pip install -r requirements.txt
     ```
+- [`experiment.py`](../../projects/quick_start/dev/experiment.py) 細節介紹
 
     ```python
-    # 套件宣告、環境變數設定
     import pandas as pd
     from sklearn.preprocessing import MinMaxScaler
     from sklearn.svm import SVC
@@ -37,24 +37,26 @@
     from dotenv import load_dotenv
     ```
     
-    0. 使用 load_dotenv 設定環境變數，其中分為單機版與多機板，選擇上取決於 Quick Install 安裝的版本
+    1. 使用 load_dotenv 設定環境變數，其中分為單機版與多機板，選擇上取決於 Quick Install 安裝的版本
+
         * 環境變數設定檔(.env.local, .env) 放在 mlops-sys/ml_experimenter 中，在程式碼中需要指定到對應路徑，下面程式已相對路徑設定。
-    ```python
-        # 系統環境變數設定(單機版)
-        load_dotenv("../../../mlops-sys/ml_experimenter/.env.local")
 
-        # 系統環境變數設定(多機版)
-        # load_dotenv("../../../mlops-sys/ml_experimenter/.env")
-    ```
+        ```python
+            # 系統環境變數設定(單機版)
+            load_dotenv("../../../mlops-sys/ml_experimenter/.env.local")
 
-    1. 使用 gdown 獲取資料
+            # 系統環境變數設定(多機版)
+            # load_dotenv("../../../mlops-sys/ml_experimenter/.env")
+        ```
+
+    2. 使用 gdown 獲取資料
         ```python
         # 資料下載 url
         url = "https://drive.google.com/file/d/13_yil-3-ihA_px4nFdWq8KVoQWxxffHm/view?usp=sharing"
 
         gdown.download(url, output='data/titanic_data.csv', quiet=False, fuzzy=True)
         ```
-    2. 資料前處理
+    3. 資料前處理
         
         ```python
         # 將 Age 的缺失值補 Age 的平均數
@@ -73,7 +75,7 @@
 
         ```
         
-    3. 模型設計
+    4. 模型設計
         
         ```python
         # 建立模型
@@ -89,7 +91,7 @@
         model_xgb.fit(X_train, y_train)
         ```
         
-    4. 評估指標
+    5. 評估指標
         
         ```python
         # svc 評估指標
@@ -101,7 +103,7 @@
         accuracy_xgb = (y_pred == y_val).sum()/y_val.shape[0]
         ```
         
-    5. 實驗紀錄至MLflow
+    6. 實驗紀錄至MLflow
         - MLflow 參數設定
             ```python
             experiment_name = 'Titanic'
@@ -155,23 +157,23 @@
                 # 上傳訓練好的模型
                 mlflow.sklearn.log_model(model_svc, artifact_path='Model')
             ```
-            
+
+完成[`experiment.py`](../../projects/quick_start/dev/experiment.py) 可以進入MLflow UI http://localhost:5050/ 左側 Experiments 選取 Titanic 可以看到兩個模型已被記錄。
+
+![Experiment_page_ui](img/Experiment_page.png)     
 
 # 佈署階段
-
+- 使用 MLflow 完成一個簡易的模型部署
 - 請先完成 [Quick-install](../quick_install/README.md) 與 [experiment.py](./dev/experiment.py)
+
+
+## 功能介紹
 
 - [`deployment.py`](../../projects/quick_start/dev/deployment.py)分享如何使用 MLflow  將訓練好的模型進行部署，一般來說會有兩道手續：
     1. 從眾多實驗中找出要將哪個模型進行部署，需要對該模型進行"註冊"(Register)
-    2. 使用註冊後的進行部署，並實際進行資料推論
-    - 因為部署階段需要使用到前面安裝步驟的相關套件，所以請先確保有確實完成 Quick install
-    - 此階段需要幾個訓練完成的模型並上傳至 MLflow，也請確定[`experiment.py`](../../projects/quick_start/dev/experiment.py)有確實完成
-    
-    ## 功能介紹
-    * 使用 MLflow 將訓練好的模型進行
-    * 資料下載與前處理
-    * 模型訓練與模型評估
-    * 使用 MLflow 紀錄
+    2. 使用註冊後的模型進行部署，並實際進行模型推論
+        - 因為部署階段需要使用到前面安裝步驟的相關套件，所以請先確保有確實完成 Quick-install
+        - 此階段需要幾個訓練完成的模型並上傳至 MLflow，也請確定[`experiment.py`](../../projects/quick_start/dev/experiment.py)有確實完成
     
     ### 請先開啟一個新的終端機輸入以下指令
 
@@ -181,6 +183,7 @@
     cd ~/MLOps-is-all-you-need/projects/quick_start/dev
 
     ```
+- [`deployment.py`](../../projects/quick_start/dev/deployment.py) 詳細介紹
 
     ```python
      # 套件宣告、環境變數設定
@@ -190,17 +193,17 @@
     from dotenv import load_dotenv
     ```
         
-    0. 使用 load_dotenv 設定環境變數，其中分為單機版與多機板，選擇上取決於 Quick Install 安裝的版本
+    1. 使用 load_dotenv 設定環境變數，其中分為單機版與多機板，選擇上取決於 Quick Install 安裝的版本
 
-    ```python
-        # 系統環境變數設定(單機版)
-        load_dotenv("../../../mlops-sys/ml_experimenter/.env.local")
+        ```python
+            # 系統環境變數設定(單機版)
+            load_dotenv("../../../mlops-sys/ml_experimenter/.env.local")
 
-        # 系統環境變數設定(多機版)
-        # load_dotenv("../../../mlops-sys/ml_experimenter/.env")
-    ```
+            # 系統環境變數設定(多機版)
+            # load_dotenv("../../../mlops-sys/ml_experimenter/.env")
+        ```
 
-    1. 註冊模型(Register model)
+    2. 註冊模型(Register model)
 
         - 獲得實驗編號
             
@@ -238,7 +241,7 @@
             )
             ```
             
-    2. 模型部署預測
+    3. 模型部署預測
 
         - 下載註冊後的模型, 並使用MLflow 讀取模型
             
@@ -258,4 +261,4 @@
 
 完成[`deployment.py`](../../projects/quick_start/dev/deployment.py)可以進入MLflow UI http://localhost:5050/#/models 查看註冊的模型(Registered Model)
 
-![prefect_server_success_ui](img/Registered_Model_page.png)
+![Registered_Model_page_ui](img/Registered_Model_page.png)
