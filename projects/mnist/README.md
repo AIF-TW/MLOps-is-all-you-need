@@ -69,7 +69,7 @@ mnist
 ## 執行步驟
 ### 0. 安裝 `mnist` 專案所需套件
 ````shell
-cd ~MLOps-is-all-you-need/projects/mnist/dev/
+cd ~/MLOps-is-all-you-need/projects/mnist/dev/
 pip install -r requirements.txt
 ````
 
@@ -154,10 +154,10 @@ python3 upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
 
 ### 2. 實驗性的訓練
 ````shell
-cd ~MLOps-is-all-you-need/projects/mnist/dev/
+cd ~/MLOps-is-all-you-need/projects/mnist/dev/
 python3 mnist.py
 ````
-執行 `~MLOps-is-all-you-need/projects/mnist/mnist.py` 的所有步驟，完成一次模型訓練並且用 MLflow 追蹤訓練結果。
+執行 `~/MLOps-is-all-you-need/projects/mnist/mnist.py` 的所有步驟，完成一次模型訓練並且用 MLflow 追蹤訓練結果。
 
 <details>
 <summary>
@@ -175,7 +175,7 @@ python3 mnist.py
 
 ### 3. 模型定期訓練的排程
 #### 3.1. 將排程上傳到Prefect伺服器
-打開 `~MLOps-is-all-you-need/mlops-sys/flow_scheduler/.env.local`，更改以下設定：
+打開 `~/MLOps-is-all-you-need/mlops-sys/flow_scheduler/.env.local`，更改以下設定：
 ```
 # FLOW_DIR = '../../flows/example_flow' # project directory of your flow.py
 改為
@@ -184,11 +184,11 @@ FLOW_DIR = '../../projects/mnist/flow' # project directory of your flow.py
 
 執行以下指令將排程資料上傳到 Prefect 伺服器：
 ````shell
-cd ~MLOps-is-all-you-need/mlops-sys/flow_scheduler/
+cd ~/MLOps-is-all-you-need/mlops-sys/flow_scheduler/
 docker compose -f docker-compose-local.yml --env-file ./.env.local up --build
 ````
 
-這個步驟的目的是將工作資料夾（就是 `~MLOps-is-all-you-need/projects/mnist/flow/` ）上傳到 Prefect 伺服器，並且製作排程。當容器成功建立，會看到包含以下文字的訊息：
+這個步驟的目的是將工作資料夾（就是 `~/MLOps-is-all-you-need/projects/mnist/flow/` ）上傳到 Prefect 伺服器，並且製作排程。當容器成功建立，會看到包含以下文字的訊息：
 ````
  ✔ Container flow_scheduler  Recreated
 flow_scheduler  | Work pool named 'mnist-cpu' already exists. Please try creating your work pool 
@@ -211,7 +211,7 @@ flow_scheduler exited with code 0
 #### 3.2. 建立 Prefect CPU Agent 來執行排程
 啟動 Prefect CPU Agent：
 ````shell
-cd ~MLOps-is-all-you-need/mlops-sys/flow_agent/cpu_pool_mnist_local_cpu/
+cd ~/MLOps-is-all-you-need/mlops-sys/flow_agent/cpu_pool_mnist_local_cpu/
 docker compose up --build -d
 ````
 > 在 `docker compose up` 後加上 `-d`，就能讓 Docker 不佔用一個終端機視窗。
@@ -265,7 +265,7 @@ Prefect Agent 會依照排程指定的時間自 Prefect 伺服器下載工作資
 
   </details>
 
-  打開 `~MLOps-is-all-you-need/projects/mnist/flow/config/flow.yml`，更改以下 3 個設定並存檔：
+  打開 `~/MLOps-is-all-you-need/projects/mnist/flow/config/flow.yml`，更改以下 3 個設定並存檔：
   ```
   將原先的
   deploy_name: model_training-cpu  # 目的，如daliy_model、data_update
@@ -281,13 +281,13 @@ Prefect Agent 會依照排程指定的時間自 Prefect 伺服器下載工作資
 
   執行以下指令將排程資料上傳到 Prefect 伺服器（指令與 Prefect CPU Agent 相同）：
   ````shell
-  cd ~MLOps-is-all-you-need/mlops-sys/flow_scheduler/
+  cd ~/MLOps-is-all-you-need/mlops-sys/flow_scheduler/
   docker compose -f docker-compose-local.yml --env-file ./.env.local up --build
   ````
 
   啟動 Prefect GPU Agent：
   ````shell
-  cd ~MLOps-is-all-you-need/mlops-sys/flow_agent/mnist-gpu_mnist_single_gpu/
+  cd ~/MLOps-is-all-you-need/mlops-sys/flow_agent/mnist-gpu_mnist_single_gpu/
   docker compose up --build -d
   ````
 </details>
