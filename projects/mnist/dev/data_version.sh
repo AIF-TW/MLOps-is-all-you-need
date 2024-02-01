@@ -1,5 +1,9 @@
 source ../../../mlops-sys/ml_experimenter/.env.local
 
+# 下載資料集MNIST.zip
+gdown "https://drive.google.com/file/d/1Ps26tCIFAXzrwXgHXC0BT3l_f0IvGrTd/view?usp=share_link" -O MNIST.zip --fuzzy
+# 若無法下載，可以使用瀏覽器打開以上連結來手動下載
+
 mkdir data
 if [ -e data/MNIST ]; then
     echo 'data/MNIST/ exists.'
