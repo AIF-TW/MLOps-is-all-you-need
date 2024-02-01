@@ -17,10 +17,10 @@
     - [測試](#5-測試)
 
 ## 使用工具
-* [MinIO](https://min.io)：提供[物件儲存](https://aws.amazon.com/tw/what-is/object-storage/)服務。
-* [Prefect](https://www.prefect.io)：把定期執行的任務進行排程，並透過 [Prefect Agent](https://docs.prefect.io/latest/concepts/agents/) 執行，使用者能隨時透過其 UI 監控每個工作的狀態。
-* [MLflow](https://mlflow.org)：MLflow 能用來追蹤模型、紀錄實驗結果，以及做到模型版本控制。
-* [Data Version Control (DVC)](https://dvc.org)：DVC 是著名的開源資料版本控制工具，操作邏輯與 [Git](https://git-scm.com) 類似。
+* [MinIO](https://min.io): 提供[物件儲存](https://aws.amazon.com/tw/what-is/object-storage/)服務。
+* [Prefect](https://www.prefect.io): 把定期執行的任務進行排程，並透過 [Prefect Agent](https://docs.prefect.io/latest/concepts/agents/) 執行，使用者能隨時透過其 UI 監控每個工作的狀態。
+* [MLflow](https://mlflow.org): MLflow 能用來追蹤模型、紀錄實驗結果，以及做到模型版本控制。
+* [Data Version Control (DVC)](https://dvc.org): DVC 是著名的開源資料版本控制工具，操作邏輯與 [Git](https://git-scm.com) 類似。
 
 ## 環境需求
 1. 需要確認以下服務正常運作：
@@ -68,21 +68,24 @@ mnist
 
 ## 執行步驟
 ### 1. 安裝專案所需套件
-````shell
+````
 cd ~/MLOps-is-all-you-need/projects/mnist/dev/
 pip install -r requirements.txt
 ````
 
 ### 2. 資料版本控制
 在與上一步同樣的路徑執行 `data_version.sh`：
-````shell
+````
 bash ./data_version.sh
 ````
 執行 `data_version.sh` 目的是為了使用 DVC 來對訓練資料進行版本控制，執行的動作有以下幾點，可以展開來查看較詳細的說明：
+
+> `data_version.sh`執行時，與 DVC 相關的步驟因為需要大量的資料處理，可能會需要數分鐘執行。
+
 <details>
   <summary>將 <code>data/</code> 資料夾加入追蹤，建立 v1.0 的資料集</summary>
 
-````shell
+````
 source ../../../mlops-sys/ml_experimenter/.env.local
 
 # 下載資料集MNIST.zip
@@ -109,7 +112,7 @@ git tag -a "v1.0" -m "Created dataset."  # 建立標籤，未來要重回某個�
 <details>
   <summary>推送至 DVC remote</summary>
 
-````shell
+````
 # 製作v1.0的訓練資料，並讓DVC開始追蹤
 git init  # 需要先以git對資料夾進行初始化
 dvc init  # DVC對資路夾進行初始化
@@ -132,7 +135,7 @@ dvc push -r minio_s3  # 推送至minio_s3
 <details>
   <summary>增加一些資料，作為 v2.0 的資料集，同樣也推送到 DVC remote</summary>
 
-````shell
+````
 # 將更多訓練資料加入train/
 for ((digit=0; digit<=9; digit++))
 do
@@ -148,14 +151,14 @@ git tag -a "v2.0" -m "More images added."
 dvc push -r minio_s3
 #git push  # 如果有遠端的git repo才需要執行
 
-python3 upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
+python upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
 ````
 </details>
 
 ### 3. 實驗性的訓練
-````shell
+````
 cd ~/MLOps-is-all-you-need/projects/mnist/dev/
-python3 mnist.py
+python mnist.py
 ````
 執行 `~/MLOps-is-all-you-need/projects/mnist/mnist.py` 的所有步驟，完成一次模型訓練並且用 MLflow 追蹤訓練結果。
 
@@ -183,7 +186,7 @@ FLOW_DIR = '../../projects/mnist/flow' # project directory of your flow.py
 ```
 
 執行以下指令將排程資料上傳到 Prefect 伺服器：
-````shell
+````
 cd ~/MLOps-is-all-you-need/mlops-sys/flow_scheduler/
 docker compose -f docker-compose-local.yml --env-file ./.env.local up --build
 ````
@@ -210,13 +213,13 @@ flow_scheduler exited with code 0
 
 #### 4.2. 建立 Prefect CPU Agent 來執行排程
 啟動 Prefect CPU Agent：
-````shell
+````
 cd ~/MLOps-is-all-you-need/mlops-sys/flow_agent/cpu_pool_mnist_local_cpu/
 docker compose up --build -d
 ````
-> 在 `docker compose up` 後加上 `-d`，就能讓 Docker 不佔用一個終端機視窗。
+> 在 `docker compose up` 後加上 `-d`，就能讓 Docker 不佔用一個終端機視窗。此容器相較於 CPU Agent，會需要更多時間建立。
 
-Prefect Agent 會依照排程指定的時間自 Prefect 伺服器下載工作資料夾，並執行指定的 Python 檔，不過要注意的是此 Python 檔必須配合 [Prefect 規定的方式](https://docs.prefect.io/latest/tutorial/flows/)撰寫，可參考[ `quick_start` ](/projects/quick_start/flow/prefect_flow.py)。
+Prefect Agent 會依照排程指定的時間自 Prefect 伺服器下載工作資料夾，並執行指定的 Python 檔，不過要注意的是此 Python 檔必須配合 [Prefect 規定的方式](https://docs.prefect.io/latest/tutorial/flows/)撰寫，可參考 [`quick_start`](/projects/quick_start/flow/prefect_flow.py)。
 
 <details><summary>
 
@@ -280,13 +283,13 @@ Prefect Agent 會依照排程指定的時間自 Prefect 伺服器下載工作資
   ```
 
   執行以下指令將排程資料上傳到 Prefect 伺服器（指令與 Prefect CPU Agent 相同）：
-  ````shell
+  ````
   cd ~/MLOps-is-all-you-need/mlops-sys/flow_scheduler/
   docker compose -f docker-compose-local.yml --env-file ./.env.local up --build
   ````
 
   啟動 Prefect GPU Agent：
-  ````shell
+  ````
   cd ~/MLOps-is-all-you-need/mlops-sys/flow_agent/mnist-gpu_mnist_single_gpu/
   docker compose up --build -d
   ````
