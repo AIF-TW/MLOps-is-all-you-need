@@ -10,11 +10,11 @@
 - [環境需求](#運行環境需求)
 - [工作資料夾結構](#工作資料夾結構)
 - [執行步驟](#執行步驟)
-    - [安裝專案所需套件](#0-安裝mnist專案所需套件)
-    - [資料版本控制](#1-資料版本控制)
-    - [實驗性的訓練](#2-實驗性的訓練)
-    - [模型定期訓練的排程](#3-模型定期訓練的排程)
-    - [測試](#4-測試)
+    - [安裝專案所需套件](#1-安裝-mnist-專案所需套件)
+    - [資料版本控制](#2-資料版本控制)
+    - [實驗性的訓練](#3-實驗性的訓練)
+    - [模型定期訓練的排程](#4-模型定期訓練的排程)
+    - [測試](#5-測試)
 
 ## 使用工具
 * [MinIO](https://min.io)：提供[物件儲存](https://aws.amazon.com/tw/what-is/object-storage/)服務。
@@ -67,13 +67,13 @@ mnist
   - `requirements.txt`: 執行任務所需的套件清單
 
 ## 執行步驟
-### 0. 安裝 `mnist` 專案所需套件
+### 1. 安裝專案所需套件
 ````shell
 cd ~/MLOps-is-all-you-need/projects/mnist/dev/
 pip install -r requirements.txt
 ````
 
-### 1. 資料版本控制
+### 2. 資料版本控制
 在與上一步同樣的路徑執行 `data_version.sh`：
 ````shell
 bash ./data_version.sh
@@ -152,7 +152,7 @@ python3 upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
 ````
 </details>
 
-### 2. 實驗性的訓練
+### 3. 實驗性的訓練
 ````shell
 cd ~/MLOps-is-all-you-need/projects/mnist/dev/
 python3 mnist.py
@@ -173,8 +173,8 @@ python3 mnist.py
 
 </details>
 
-### 3. 模型定期訓練的排程
-#### 3.1. 將排程上傳到Prefect伺服器
+### 4. 模型定期訓練的排程
+#### 4.1. 將排程上傳到Prefect伺服器
 打開 `~/MLOps-is-all-you-need/mlops-sys/flow_scheduler/.env.local`，更改以下設定：
 ```
 # FLOW_DIR = '../../flows/example_flow' # project directory of your flow.py
@@ -208,7 +208,7 @@ flow_scheduler exited with code 0
 ````
 > 訊息顯示排程已上傳至 Prefect 伺服器，正等待 Prefect Agent 來執行這個排程，接下來就要啟動另一個容器來建立 Prefect Agent。
 
-#### 3.2. 建立 Prefect CPU Agent 來執行排程
+#### 4.2. 建立 Prefect CPU Agent 來執行排程
 啟動 Prefect CPU Agent：
 ````shell
 cd ~/MLOps-is-all-you-need/mlops-sys/flow_agent/cpu_pool_mnist_local_cpu/
@@ -220,7 +220,7 @@ Prefect Agent 會依照排程指定的時間自 Prefect 伺服器下載工作資
 
 <details><summary>
 
-#### 3.3. 建立 Prefect GPU Agent 排程
+#### 4.3. 建立 Prefect GPU Agent 排程
 </summary>
 
   如果電腦配有 NVIDIA GPU，可以執行這個段落來建立 GPU Agent。
@@ -292,7 +292,7 @@ Prefect Agent 會依照排程指定的時間自 Prefect 伺服器下載工作資
   ````
 </details>
 
-### 4. 測試
+### 5. 測試
 在排程開始執行前我們需要進行測試，來確認排程可以正常執行，這邊以 CPU Agent 為例，。
 
 進入 Prefect UI，在左側欄選擇「Flows」，確認畫面中是否出現「MNIST」
