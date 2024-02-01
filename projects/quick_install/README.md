@@ -1,6 +1,6 @@
 # 快速安裝
 此章節旨在說明如何快速安裝 MLOps 系統。本系統包含 4 個功能/服務，分別是
-1. 伺服器 `server`：使用 MLflow 與 Prefect 分別提供排程控制與模型版本控制的服務
+1. 伺服器 `server`：使用 MLflow 與 Prefect 分別提供模型版本控制與排程控制的服務
 2. 開發環境 `ml_experimenter`：建立開發環境需要的基本環境變數與套件清單
 3. 工作流程的排程功能 `flow_scheduler`：將排程專案上傳到 `server` 的功能
 4. 工作流程的執行服務`flow_agent`：執行 `server` 指定排程任務的服務
@@ -8,6 +8,8 @@
 本文提供`多機模式`與`單機模式`兩種部署模式。使用者如果是多人開發團隊，可以將上述 4 個功能/服務分別部署在不同電腦中（`多機模式`），本文將以 `電腦1`、`電腦2`、`電腦3`、`電腦4`指稱 4 個功能/服務分別部署的電腦。而使用者如果是單人使用或是以測試為目的，可以將上述 4 個功能/服務部署在同一台電腦（`單機模式`）。
 
 除此之外，本文針對`工作流程的排程功能`也提供 CPU 和 GPU 兩個版本，使用者可以根據排程任務中的模型需求，選擇對應的版本。
+
+更多 MLOps 系統的知識請參考 [<AI 專案開發一定要用 MLOps 嗎？從專案流程看起>](https://edge.aif.tw/about-mlops-project-flow)。
 
 ## 事前準備
 > 如果是 `多機模式`，請在所有電腦都執行下列步驟
@@ -263,7 +265,7 @@
     cd ~/MLOps-is-all-you-need/mlops-sys/ml_experimenter
     pip install -r requirements_sys.txt
     ```
-3. 建立一個專案資料夾以及在底下建立開發資料夾 `dev` ，並進入此開發資料夾。此處以 [projects/quick-start/dev](../quick_start/dev)為例
+3. 建立一個專案資料夾（例如 `quick_start/`）以及在底下建立開發資料夾 `dev` ，並進入此開發資料夾。此處以 [projects/quick_start/dev](../quick_start/dev)為例
     ```
     cd ~/MLOps-is-all-you-need/projects/quick_start/dev
     ```
@@ -280,7 +282,7 @@
     PROJECT_NAME='my-project'  # 取消註解，並填入專案名稱
     ```
 
-5. [可選擇] 在此開發資料夾中，可以透過初始化 Git 與 DVC 啟用程式碼與資料版本控制服務 
+5. [Optional] 在此開發資料夾 `dev` 中，可以透過初始化 Git 與 DVC 啟用程式碼與資料版本控制服務 
     <details><summary>程式碼</summary>
     <p>
 
@@ -345,7 +347,7 @@
 
 > 請開啟新的終端機環境執行本小節的指令
 
-1. 要幫專案建立排程，請在專案資料夾底下建立排程資料夾 `flow` ，並將開發資料夾 `dev` 的檔案複製到`flow` 中，以及將複製到 `flow` 的主要 `.py` 檔加入 Prefect 的排程功能。加入 Prefect 排程設定的方式，主要是在 Python 函式中加入 Prefect 裝飾器 (decorator)，例如：
+1. 要幫專案建立排程，請在專案資料夾（例如 `quick_start/`）底下建立排程資料夾 `flow` ，並將開發資料夾 `dev` 的檔案複製到`flow` 中，以及將複製到 `flow` 的主要 `.py` 檔加入 Prefect 的排程功能。加入 Prefect 排程設定的方式，主要是在 Python 函式中加入 Prefect 裝飾器 (decorator)，例如：
     ```
     from prefect import flow, task
 
@@ -364,7 +366,7 @@
 
     > 設定完排程的 `.py` 請參考 [projects/quick_start/flow/prefect_flow.py](../quick_start/flow/prefect_flow.py)
 
-    > 更多細節說明請參考 quick-start 章節
+    > 更多細節說明請參考 [mnist 章節](../mnist/README.md)
 
 2. 接著我們需在 `flow` 底下建立 `config` 資料夾，並在底下存放排程設定檔 `flow.yml`。 `flow.yml` 的存放檔案結構與參數設定格式請參考 [projects/quick_start/flow/config/flow.yml](../quick_start/flow/config/flow.yml) 。
 
@@ -449,7 +451,7 @@
     - `POOL_NAME`: 執行服務歸屬的資源池
     - `QUEUE_NAME`: 負責執行的專案
 
-3. 然後在修改該資料夾底下存放 `requirements.txt` ，其內容包含執行專案排程所需的相關套件與版本
+3. 然後再修改該資料夾底下存放的 `requirements.txt` ，其內容需要包含執行專案排程所需的相關套件與版本
 
 4. 最後建立執行服務
     ```
