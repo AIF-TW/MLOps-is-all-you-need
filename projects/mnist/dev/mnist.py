@@ -202,7 +202,7 @@ def main():
     train_loader, val_loader = preprocessing(
         root='./data/MNIST/train',
         shuffle_data=True,
-        batch_size=64,
+        batch_size=8,
         random_seed=1,
         val_size=0.2
     )
@@ -212,10 +212,9 @@ def main():
         train_loader=train_loader,
         val_loader=val_loader,
         model=Net(),
-        n_epochs=12,
+        n_epochs=2,
         learning_rate=0.001,
-        device_name='mps' if torch.backends.mps.is_available() else 'cpu'
-        # device_name='cuda' if torch.cuda.is_available() else 'cpu'
+        device_name='cuda' if torch.cuda.is_available() else 'cpu'
     )
 
 

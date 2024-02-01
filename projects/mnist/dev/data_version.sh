@@ -43,4 +43,4 @@ git tag -a "v2.0" -m "More images added."
 dvc push -r minio_s3
 #git push  # 如果有遠端的git repo才需要執行
 
-python3 upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
+python upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
