@@ -35,7 +35,7 @@
 mnist
 ├── README.md
 ├── dev
-│   ├── MNIST.zip
+│   ├── .dvcignore
 │   ├── data_version.sh
 │   ├── mnist.py
 │   ├── requirements.txt
@@ -50,7 +50,8 @@ mnist
 └── img
 ```
 * `dev/`: 開發階段的相關檔案
-  - `MNIST.zip`: MNIST資料集，解壓縮後會產生`data/`資料夾，內容為訓練資料與測試資料
+  - `.dvcignore`: 讓DVC忽略特定的檔案
+  - `MNIST.zip`: MNIST資料集，解壓縮後會產生`data/`資料夾，內容為訓練資料與測試資料（此檔案會在執行`data_version.sh`時自動下載）
   - `data_version.sh`: 用來完成資料版本控制的Shell檔
   - `mnist.py`: 執行模型訓練任務的Python檔
   - `requirements.txt`: 執行任務所需的套件清單

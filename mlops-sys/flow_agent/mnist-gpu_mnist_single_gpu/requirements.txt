@@ -3,7 +3,7 @@ dill
 numpy==1.26.3
 torchvision==0.15.2
 torch==2.0.1
-gdown==4.7.1
+gdown==5.0.1
 dvc==3.33.2
 dvc_s3==2.23.0
 pyyaml==6.0.1
