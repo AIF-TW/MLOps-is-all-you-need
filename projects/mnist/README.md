@@ -42,12 +42,13 @@ mnist
 │   ├── requirements.txt
 │   └── upload_dvc_file_to_minio.py
 ├── flow
-│   ├── config
-│   │   ├── dataset.yml
-│   │   ├── flow.yml
-│   │   └── hyp.yml
-│   ├── flow.py
-│   └── requirements.txt
+│   ├── .prefectignore
+│   ├── config
+│   │   ├── dataset.yml
+│   │   ├── flow.yml
+│   │   └── hyp.yml
+│   ├── flow.py
+│   └── requirements.txt
 └── img
 ```
 * `dev/`: 開發階段的相關檔案
@@ -59,6 +60,7 @@ mnist
   - `MNIST.zip`: 此檔案在執行 `data_version.sh` 時才會自動下載，內容為訓練資料與測試資料，解壓縮後會產生 `MNIST/` 資料夾
 
 * `flow/`: 排程階段的相關檔案
+  - `.prefectignore`: 讓 Prefect 忽略特定的檔案
   - `config/`: 放置任務的各項設定值
     - `dataset.yml`: 資料集相關設定，例如資料的路徑
     - `flow.yml`: 排程相關設定
@@ -198,19 +200,18 @@ docker compose -f docker-compose-local.yml --env-file ./.env.local up --build
 ````
  ✔ Container flow_scheduler 
 Attaching to flow_scheduler
-flow_scheduler  | Work pool named 'mnist-cpu' already exists. Please try creating your work pool 
-flow_scheduler  | again with a different name.
+flow_scheduler  | Created work pool 'mnist-cpu'.
 flow_scheduler  | Found flow 'MNIST'
 flow_scheduler  | Deployment YAML created at '/root/flows/main-deployment.yaml'.
 flow_scheduler  | Successfully uploaded 45 files to s3://prefect/main/model_training-cpu
 flow_scheduler  | Deployment 'MNIST/model_training-cpu' successfully created with id 
-flow_scheduler  | 'f227e458-649c-4283-b41f-8134e8dd914f'.  # 在你的環境執行時，可能會看到不同的id
+flow_scheduler  | 'f8061678-abe6-443c-a161-fbf69a72fcf2'.  # 在你的環境執行時，此id可能會與範例不同
 flow_scheduler  | 
 flow_scheduler  | To execute flow runs from this deployment, start an agent that pulls work from 
 flow_scheduler  | the 'mnist-cpu' work pool:
 flow_scheduler  | 
 flow_scheduler  | $ prefect agent start -p 'mnist-cpu'
-flow_scheduler exited with code 0  
+flow_scheduler exited with code 0
 ````
 > 訊息顯示排程已上傳至 Prefect 伺服器，正等待 Prefect Agent 來執行這個排程，接下來就要啟動另一個容器來建立 Prefect Agent。
 
