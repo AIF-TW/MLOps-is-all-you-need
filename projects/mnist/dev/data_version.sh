@@ -1,7 +1,7 @@
 source ../../../mlops-sys/ml_experimenter/.env.local
 
 # 下載資料集MNIST.zip
-gdown "https://drive.google.com/file/d/1Ps26tCIFAXzrwXgHXC0BT3l_f0IvGrTd/view?usp=share_link" -O MNIST.zip --fuzzy
+gdown "https://drive.google.com/file/d/1296F7Fa2hZy_2cImet8S-HlZhcWqOdwa/view?usp=sharing" -O MNIST.zip --fuzzy
 # 若無法下載，可以使用瀏覽器打開以上連結來手動下載
 
 mkdir data
@@ -44,3 +44,5 @@ dvc push -r minio_s3
 #git push  # 如果有遠端的git repo才需要執行
 
 python upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
+
+cp -r .git ../flow

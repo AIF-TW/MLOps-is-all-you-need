@@ -76,6 +76,10 @@ def fetch_dataset(cfg):
     os.system('dvc remote modify remote endpointurl ${MLFLOW_S3_ENDPOINT_URL}')
     os.system('dvc pull -r remote')
 
+    # 取得資料標籤並紀錄
+    data_version = os.popen('git describe --tags').read()[:-1]
+    print(f'Current data version: {data_version}')
+
     return data_version
 
 @task(name='Preprocessing')
@@ -146,6 +150,7 @@ def model_training(train_loader, val_loader, model, data_version='1.0', n_epochs
 
         # 紀錄實驗參數
         mlflow.log_params({
+            'Data version': data_version,
             'Model': model.__class__.__name__,
             'Number of epochs': n_epochs,
             'Optimizer': type(optimizer).__name__,
