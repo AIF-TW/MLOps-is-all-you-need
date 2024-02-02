@@ -42,12 +42,13 @@ mnist
 │   ├── requirements.txt
 │   └── upload_dvc_file_to_minio.py
 ├── flow
-│   ├── config
-│   │   ├── dataset.yml
-│   │   ├── flow.yml
-│   │   └── hyp.yml
-│   ├── flow.py
-│   └── requirements.txt
+│   ├── .prefectignore
+│   ├── config
+│   │   ├── dataset.yml
+│   │   ├── flow.yml
+│   │   └── hyp.yml
+│   ├── flow.py
+│   └── requirements.txt
 └── img
 ```
 * `dev/`: 開發階段的相關檔案
@@ -59,6 +60,7 @@ mnist
   - `MNIST.zip`: 此檔案在執行 `data_version.sh` 時才會自動下載，內容為訓練資料與測試資料，解壓縮後會產生 `MNIST/` 資料夾
 
 * `flow/`: 排程階段的相關檔案
+  - `.prefectignore`: 讓 Prefect 忽略特定的檔案
   - `config/`: 放置任務的各項設定值
     - `dataset.yml`: 資料集相關設定，例如資料的路徑
     - `flow.yml`: 排程相關設定
@@ -152,6 +154,9 @@ dvc push -r minio_s3
 #git push  # 如果有遠端的git repo才需要執行
 
 python upload_dvc_file_to_minio.py  # 將MNIST.dvc上傳至MinIO
+
+cp -r .git ../flow
+
 ````
 </details>
 
@@ -193,15 +198,14 @@ docker compose -f docker-compose-local.yml --env-file ./.env.local up --build
 
 這個步驟的目的是將工作資料夾（就是 `~/MLOps-is-all-you-need/projects/mnist/flow/` ）上傳到 Prefect 伺服器，並且製作排程。當容器成功建立，會看到包含以下文字的訊息：
 ````
- ✔ Container flow_scheduler  Recreated
-flow_scheduler  | Work pool named 'mnist-cpu' already exists. Please try creating your work pool 
-flow_scheduler  | again with a different name.
+ ✔ Container flow_scheduler 
+Attaching to flow_scheduler
+flow_scheduler  | Created work pool 'mnist-cpu'.
 flow_scheduler  | Found flow 'MNIST'
-flow_scheduler  | Default '.prefectignore' file written to /root/flows/.prefectignore
 flow_scheduler  | Deployment YAML created at '/root/flows/main-deployment.yaml'.
-flow_scheduler  | Successfully uploaded 8 files to s3://prefect/main/model_training
-flow_scheduler  | Deployment 'MNIST/model_training' successfully created with id 
-flow_scheduler  | '476b5fc2-cb78-4e32-99ea-961ee84873a0'.  # 在你的環境執行時，可能會看到不同的id
+flow_scheduler  | Successfully uploaded 45 files to s3://prefect/main/model_training-cpu
+flow_scheduler  | Deployment 'MNIST/model_training-cpu' successfully created with id 
+flow_scheduler  | 'f8061678-abe6-443c-a161-fbf69a72fcf2'.  # 在你的環境執行時，此id可能會與範例不同
 flow_scheduler  | 
 flow_scheduler  | To execute flow runs from this deployment, start an agent that pulls work from 
 flow_scheduler  | the 'mnist-cpu' work pool:
@@ -214,7 +218,7 @@ flow_scheduler exited with code 0
 #### 4.2. 建立 Prefect CPU Agent 來執行排程
 啟動 Prefect CPU Agent：
 ````
-cd ~/MLOps-is-all-you-need/mlops-sys/flow_agent/cpu_pool_mnist_local_cpu/
+cd ~/MLOps-is-all-you-need/mlops-sys/flow_agent/mnist-cpu_mnist_singal_cpu/
 docker compose up --build -d
 ````
 > 在 `docker compose up` 後加上 `-d`，就能讓 Docker 不佔用一個終端機視窗。此容器相較於 CPU Agent，會需要更多時間建立。
