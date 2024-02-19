@@ -17,7 +17,12 @@
 1. 請先安裝需求套件： [`Git`](https://git-scm.com/book/zh-tw/v2/%E9%96%8B%E5%A7%8B-Git-%E5%AE%89%E8%A3%9D%E6%95%99%E5%AD%B8) 、 [`Docker`](https://www.docker.com/products/docker-desktop/) 、 [`Conda`](https://conda.io/projects/conda/en/latest/user-guide/install/index.html#)
     - 如果 `工作流程的執行服務` 需要使用 GPU，請在該電腦安裝 [`NVIDIA Container Toolkit`](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 
-> 註：如果是 Windows作業系統，建議使用 Bash 執行此章節的指令，比如使用 `Git Bash` 執行。 `Git Bash` 會在下載 `Git` 套件的時候一併下載，使用方式請參考 [如何在VScode 使用 git bash](https://code.visualstudio.com/docs/sourcecontrol/intro-to-git#_git-bash-on-windows)。
+> 註：`Docker` 下載時 `Docker Compose` 會一併下載，請透過下方程式碼確認 `Docker Compose` 版本 > `2.17.0`。若版本較舊，請[更新](https://docs.docker.com/compose/install/)。
+```
+docker compose version
+```
+
+> 註：如果是 Windows 作業系統，建議使用 Bash 執行此章節的指令，比如使用 `Git Bash` 執行。 `Git Bash` 會在下載 `Git` 套件的時候一併下載，使用方式請參考 [如何在 VScode 使用 git bash](https://code.visualstudio.com/docs/sourcecontrol/intro-to-git#_git-bash-on-windows)。
 
 2. 開啟終端機，在根目錄下載此專案
     > 如果不在根目錄下載請特別注意檔案路徑，後續內容需要自行調整檔案路徑
